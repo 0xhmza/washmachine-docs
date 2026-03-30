@@ -40,6 +40,12 @@ Washmachine wraps the full shellcode-loader workflow into one tool: pick a shell
 
 Available as both a **standalone CLI** (`washmachine-cli`) and a **WinUI 3 desktop app**.
 
+## Documentation
+
+- [Getting Started](/getting-started) — installation, setup, and first run
+- [CLI Reference](/cli-reference) — command flags and examples
+- [Architecture](/architecture) — catalog model and rendering flow
+
 ## Requirements
 
 ### CLI (washmachine-cli)
@@ -66,8 +72,9 @@ Available as both a **standalone CLI** (`washmachine-cli`) and a **WinUI 3 deskt
 ### Building
 
 ```bash
-# Build all three projects
-dotnet build washmachine.sln
+# Build docs locally
+npm install
+npm run docs:dev
 ```
 
 ### CLI Examples
