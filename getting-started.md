@@ -55,7 +55,7 @@ Bin2Shell is also auto-provisioned by the desktop app on first run when required
 
 ## Output locations
 
-- Compiled binaries: `temp/cpp/Compiled BInaries/`
+- Compiled binaries: `temp/cpp/Compiled Binaries/`
 - Session logs: `logging/session_<timestamp>_<uuid>/`
 - Test harness results: `test_results.json`
 
