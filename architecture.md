@@ -1,6 +1,6 @@
 # Architecture
 
-Washmachine is designed as a shared-core platform: one pipeline, multiple surfaces.
+Washmachine is implemented as a shared-core system where CLI and desktop clients execute the same backend services and data contracts.
 
 ## Solution layout
 
@@ -18,11 +18,22 @@ washmachine (GUI) ---> Washmachine.Core
 Washmachine.Cli  ---> Washmachine.Core
 ```
 
-The CLI and GUI are siblings over the same core—not dependencies of each other.
+`Washmachine.Cli` and `washmachine` are sibling entry points. Neither depends on the other; both depend on `Washmachine.Core`.
 
-## Core compile pipeline
+## Runtime configuration model
 
-High-level flow in `CompilerService`:
+Core generation behavior is defined by runtime YAML assets (for example `Assets/vx_api_snippets.yaml`) that provide:
+
+- template definitions,
+- snippet fragments and replacements,
+- encoder/envelope catalog metadata,
+- and options exposed through interface layers.
+
+This approach decouples generation behavior from UI implementation details.
+
+## Compile pipeline internals
+
+Primary flow executed through `CompilerService`:
 
 1. Load templates/snippets from `Assets/vx_api_snippets.yaml`
 2. Resolve source mode (`file`, `raw hex`, `URL`, or test payload)
@@ -31,6 +42,16 @@ High-level flow in `CompilerService`:
 5. Emit C++ source into temp workspace
 6. Discover available compiler toolchain and build
 7. Save output artifact and session logs
+
+## Toolchain discovery
+
+`CompilerToolLocator` is responsible for selecting an available compiler from supported Windows toolchains:
+
+- MSVC
+- MinGW-w64 `g++`
+- `clang++`
+
+Toolchain detection allows the same command surface to operate across multiple development environments.
 
 ## Key shared services
 
@@ -45,7 +66,29 @@ Notable components in `Washmachine.Core`:
 - `PeBackdoorService`
 - `RequirementProvisioner`
 
-## Testing model
+## PE operation services
+
+`PeAnalyzerService` and `PeBackdoorService` provide executable-focused workflows used by CLI commands:
+
+- metadata and structure analysis,
+- payload extraction support via strip flows,
+- and shellcode injection strategies for patch workflows.
+
+## Provisioning and external dependency integration
+
+`RequirementProvisioner` handles dependency setup required for optional flows, especially Bin2Shell-backed encoder/envelope execution.
+
+## Logging and artifact model
+
+Runtime outputs are persisted into predictable locations:
+
+- generated and compiled outputs in `temp/cpp/Compiled Binaries/`,
+- per-session diagnostics in `logging/session_<timestamp>_<uuid>/`,
+- harness summary output in `test_results.json`.
+
+This model supports command-line automation and post-run inspection.
+
+## Test harness model
 
 The CLI test harness (`washmachine-cli test`) covers:
 
@@ -55,7 +98,7 @@ The CLI test harness (`washmachine-cli test`) covers:
 
 Results are written to `test_results.json`.
 
-## Delivery notes
+## Packaging notes
 
 ### CLI package
 
@@ -66,10 +109,6 @@ Results are written to `test_results.json`.
 
 - `washmachine.exe` and runtime output files
 - `Assets/vx_api_snippets.yaml`
-
-::: tip Design Note
-Washmachine’s uniqueness is operational consistency: a single runtime catalog influences both interface layers and keeps behavior aligned.
-:::
 
 ::: warning Security Notice
 For educational and authorized security testing purposes only.
