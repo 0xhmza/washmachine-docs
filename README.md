@@ -1,3 +1,5 @@
+
+
 # Washmachine Documentation
 
 VitePress documentation for [Washmachine](https://github.com/0xhmza/washmachine).
