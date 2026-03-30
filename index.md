@@ -19,16 +19,16 @@ hero:
 features:
   - icon: 🧩
     title: Shared core architecture
-    details: `Washmachine.Core` hosts compile, catalog, PE, and provisioning services consumed by both `washmachine-cli` and the WinUI application.
+    details: "Washmachine.Core hosts compile, catalog, PE, and provisioning services consumed by both washmachine-cli and the WinUI application."
   - icon: ⚙️
     title: YAML-controlled generation
-    details: Templates, snippets, encoders, and envelopes are loaded from the runtime catalog and rendered into compilable C++ sources.
+    details: "Templates, snippets, encoders, and envelopes are loaded from the runtime catalog and rendered into compilable C++ sources."
   - icon: 🧪
     title: Built-in validation paths
-    details: The CLI includes `analyze`, `strip`, `backdoor`, and `test` workflows for artifact inspection, payload extraction, patching, and regression checks.
+    details: "The CLI includes analyze, strip, backdoor, and test workflows for artifact inspection, payload extraction, patching, and regression checks."
   - icon: 🔗
     title: Bin2Shell integration
-    details: Optional encoding and envelope stages can be provisioned and invoked through the same generation pipeline.
+    details: "Optional encoding and envelope stages can be provisioned and invoked through the same generation pipeline."
 ---
 
 ## Overview
