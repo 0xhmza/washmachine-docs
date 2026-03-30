@@ -1,5 +1,7 @@
 # Architecture
 
+Washmachine is designed as a shared-core platform: one pipeline, multiple surfaces.
+
 ## Solution layout
 
 ```text
@@ -16,21 +18,21 @@ washmachine (GUI) ---> Washmachine.Core
 Washmachine.Cli  ---> Washmachine.Core
 ```
 
-The CLI and GUI do not depend on each other.
+The CLI and GUI are siblings over the same core—not dependencies of each other.
 
-## Core pipeline
+## Core compile pipeline
 
-High-level compile flow in `CompilerService`:
+High-level flow in `CompilerService`:
 
-1. Read template/snippet definitions from `Assets/vx_api_snippets.yaml`
+1. Load templates/snippets from `Assets/vx_api_snippets.yaml`
 2. Resolve source mode (`file`, `raw hex`, `URL`, or test payload)
 3. Optionally run Bin2Shell for encoding/envelope
-4. Render template placeholders with selected snippets and includes
+4. Render template placeholders with selected snippets/includes
 5. Emit C++ source into temp workspace
-6. Detect compiler toolchain and execute build
+6. Discover available compiler toolchain and build
 7. Save output artifact and session logs
 
-## Shared services
+## Key shared services
 
 Notable components in `Washmachine.Core`:
 
@@ -45,7 +47,7 @@ Notable components in `Washmachine.Core`:
 
 ## Testing model
 
-The test harness is exposed by `washmachine-cli test` and covers:
+The CLI test harness (`washmachine-cli test`) covers:
 
 - Phase 1: encoder × envelope × web-helper combinations
 - Phase 2: template × snippet combinations
@@ -64,6 +66,10 @@ Results are written to `test_results.json`.
 
 - `washmachine.exe` and runtime output files
 - `Assets/vx_api_snippets.yaml`
+
+::: tip Design Note
+Washmachine’s uniqueness is operational consistency: a single runtime catalog influences both interface layers and keeps behavior aligned.
+:::
 
 ::: warning Security Notice
 For educational and authorized security testing purposes only.

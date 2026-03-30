@@ -11,19 +11,30 @@ export default defineConfig({
     siteTitle: 'Washmachine Docs',
 
     nav: [
-      { text: 'Guide', link: '/getting-started' },
-      { text: 'CLI Reference', link: '/cli-reference' },
+      { text: 'Overview', link: '/' },
+      { text: 'Quickstart', link: '/getting-started' },
+      { text: 'Reference', link: '/cli-reference' },
       { text: 'Architecture', link: '/architecture' },
       { text: 'GitHub', link: 'https://github.com/0xhmza/washmachine' }
     ],
 
     sidebar: [
       {
-        text: 'Documentation',
+        text: 'Getting Started',
         items: [
-          { text: 'Overview', link: '/' },
-          { text: 'Getting Started', link: '/getting-started' },
-          { text: 'CLI Reference', link: '/cli-reference' },
+          { text: 'Welcome', link: '/' },
+          { text: 'Quickstart', link: '/getting-started' }
+        ]
+      },
+      {
+        text: 'Reference',
+        items: [
+          { text: 'CLI Reference', link: '/cli-reference' }
+        ]
+      },
+      {
+        text: 'Internals',
+        items: [
           { text: 'Architecture', link: '/architecture' }
         ]
       }
