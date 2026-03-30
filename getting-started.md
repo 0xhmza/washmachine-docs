@@ -1,4 +1,15 @@
-# Getting Started
+# Quickstart
+
+Welcome to Washmachine—the fast lane for YAML-driven shellcode loader workflows.
+
+If you want a clean first run with zero guesswork, follow this page top-to-bottom.
+
+## What you get
+
+- A shared pipeline available as CLI and desktop app
+- Template + snippet composition from one runtime catalog
+- Optional Bin2Shell-backed encoding/envelope flow
+- Built-in PE analysis and transformation operations
 
 ## Requirements
 
@@ -21,7 +32,7 @@
 | C++ Compiler | MSVC, MinGW-w64 `g++`, or `clang++` |
 | Python | 3.10+ (required for Bin2Shell features) |
 
-## Clone and build
+## 1) Clone and build
 
 ```powershell
 git clone https://github.com/0xhmza/washmachine.git
@@ -29,40 +40,44 @@ cd washmachine
 dotnet build washmachine.sln
 ```
 
-## CLI usage flow
+## 2) Run a core CLI flow
 
 ```powershell
-# Build a loader from shellcode file
+# Compile a loader from shellcode
 washmachine-cli compile -s payload.bin -t shellcode-minimal
 
-# Analyze a PE file
+# Analyze PE metadata and sections
 washmachine-cli analyze target.exe --json
 
-# Strip shellcode from a PE into .bin
+# Extract executable bytes into .bin payload
 washmachine-cli strip target.exe -o extracted.bin
 
-# Backdoor a PE with shellcode
+# Inject shellcode into an existing PE
 washmachine-cli backdoor --pe target.exe -s payload.bin -o patched.exe
 ```
 
-## Provision Bin2Shell
+## 3) Provision Bin2Shell (optional but recommended)
 
 ```powershell
 washmachine-cli provision
 ```
 
-Bin2Shell is also auto-provisioned by the desktop app on first run when required.
+The desktop app can auto-provision Bin2Shell on first use when required.
 
-## Output locations
+## 4) Know your output paths
 
 - Compiled binaries: `temp/cpp/Compiled Binaries/`
 - Session logs: `logging/session_<timestamp>_<uuid>/`
 - Test harness results: `test_results.json`
 
-## Next steps
+## Next moves
 
-- Read the [CLI Reference](/cli-reference) for full command details.
-- Read the [Architecture](/architecture) for project and pipeline internals.
+- Continue with [CLI Reference](/cli-reference) for complete options
+- Continue with [Architecture](/architecture) for internals and flow
+
+::: tip Exclusivity Note
+Washmachine’s edge is its single-catalog operating model: one YAML source, many execution paths, consistent outcomes.
+:::
 
 ::: warning Security Notice
 For educational and authorized security testing purposes only.
