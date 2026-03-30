@@ -1,0 +1,382 @@
+/**
+ * Cyberpunk Theme for Washmachine Documentation
+ * Modern, neon-inspired design with acrylic effects
+ */
+
+:root {
+  /* Cyberpunk Color Palette */
+  --vp-c-brand-1: #00f0ff;
+  --vp-c-brand-2: #00d4e6;
+  --vp-c-brand-3: #00b8cc;
+  --vp-c-brand-soft: rgba(0, 240, 255, 0.14);
+
+  /* Neon accents */
+  --cyber-pink: #ff00ff;
+  --cyber-purple: #9d00ff;
+  --cyber-blue: #00f0ff;
+  --cyber-green: #00ff9f;
+  --cyber-yellow: #ffff00;
+
+  /* Dark backgrounds */
+  --vp-c-bg: #0a0e1a;
+  --vp-c-bg-soft: #0f1419;
+  --vp-c-bg-mute: #161b22;
+  --vp-c-bg-alt: #1a1f2e;
+
+  /* Text colors */
+  --vp-c-text-1: #e0e6ed;
+  --vp-c-text-2: #b8c1cc;
+  --vp-c-text-3: #8891a0;
+
+  /* Border colors */
+  --vp-c-border: rgba(0, 240, 255, 0.2);
+  --vp-c-divider: rgba(0, 240, 255, 0.12);
+  --vp-c-gutter: rgba(0, 240, 255, 0.08);
+
+  /* Code block colors */
+  --vp-code-block-bg: rgba(10, 14, 26, 0.8);
+  --vp-code-bg: rgba(0, 240, 255, 0.1);
+
+  /* Typography */
+  --vp-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* Acrylic glass effect for header */
+.VPNav {
+  background: rgba(10, 14, 26, 0.8) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 240, 255, 0.1);
+}
+
+/* Neon glow effect for logo and brand */
+.VPNavBarTitle .title,
+.logo {
+  text-shadow: 0 0 10px var(--cyber-blue),
+               0 0 20px var(--cyber-blue),
+               0 0 30px var(--cyber-blue);
+  transition: all 0.3s ease;
+}
+
+.VPNavBarTitle .title:hover,
+.logo:hover {
+  text-shadow: 0 0 15px var(--cyber-blue),
+               0 0 30px var(--cyber-blue),
+               0 0 45px var(--cyber-blue),
+               0 0 60px var(--cyber-pink);
+}
+
+/* Cyberpunk links with neon underline */
+.VPNavBarMenuLink,
+.VPLink {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.VPNavBarMenuLink::after,
+.VPLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyber-blue), var(--cyber-pink));
+  box-shadow: 0 0 10px var(--cyber-blue);
+  transition: width 0.3s ease;
+}
+
+.VPNavBarMenuLink:hover::after,
+.VPLink:hover::after {
+  width: 100%;
+}
+
+/* Hero section with cyberpunk gradient */
+.VPHero {
+  background: linear-gradient(135deg,
+    rgba(157, 0, 255, 0.1) 0%,
+    rgba(0, 240, 255, 0.1) 50%,
+    rgba(255, 0, 255, 0.1) 100%);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.VPHero .name {
+  background: linear-gradient(120deg, var(--cyber-blue), var(--cyber-pink), var(--cyber-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.VPHero .tagline {
+  color: var(--vp-c-text-2);
+  font-weight: 500;
+}
+
+/* Neon buttons */
+.VPButton {
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.VPButton.brand {
+  background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple));
+  border: none;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+}
+
+.VPButton.brand:hover {
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.8),
+              0 0 40px rgba(157, 0, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.VPButton.alt {
+  border: 2px solid var(--cyber-blue);
+  background: rgba(0, 240, 255, 0.05);
+  color: var(--cyber-blue);
+}
+
+.VPButton.alt:hover {
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Feature cards with glass morphism */
+.VPFeature {
+  background: rgba(26, 31, 46, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.VPFeature:hover {
+  background: rgba(26, 31, 46, 0.8);
+  border-color: rgba(0, 240, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 240, 255, 0.2),
+              inset 0 0 20px rgba(0, 240, 255, 0.05);
+  transform: translateY(-4px);
+}
+
+.VPFeature .icon {
+  font-size: 2em;
+  filter: drop-shadow(0 0 10px var(--cyber-blue));
+}
+
+/* Code blocks with cyberpunk styling */
+div[class*='language-'] {
+  background: rgba(10, 14, 26, 0.9) !important;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.05);
+}
+
+div[class*='language-']:hover {
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.08),
+              0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.vp-code-group .tabs {
+  background: rgba(15, 20, 25, 0.8);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.vp-code-group .tabs label {
+  color: var(--vp-c-text-2);
+  transition: all 0.3s ease;
+}
+
+.vp-code-group .tabs label:hover {
+  color: var(--cyber-blue);
+  text-shadow: 0 0 10px var(--cyber-blue);
+}
+
+/* Inline code */
+code {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 4px;
+  color: var(--cyber-blue);
+  font-weight: 500;
+}
+
+/* Tables with cyberpunk styling */
+table {
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background: rgba(0, 240, 255, 0.1);
+}
+
+th {
+  color: var(--cyber-blue);
+  font-weight: 600;
+  border-bottom: 2px solid rgba(0, 240, 255, 0.3);
+}
+
+tr:hover {
+  background: rgba(0, 240, 255, 0.05);
+}
+
+td {
+  border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+/* Sidebar with acrylic effect */
+.VPSidebar {
+  background: rgba(10, 14, 26, 0.95);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.VPSidebarItem.is-active .text {
+  color: var(--cyber-blue);
+  font-weight: 600;
+  text-shadow: 0 0 10px var(--cyber-blue);
+}
+
+.VPSidebarItem:hover .text {
+  color: var(--cyber-blue);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vp-c-bg);
+  border-left: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--cyber-blue), var(--cyber-purple));
+  border-radius: 6px;
+  border: 2px solid var(--vp-c-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--cyber-pink), var(--cyber-purple));
+  box-shadow: 0 0 10px var(--cyber-pink);
+}
+
+/* Search box */
+.DocSearch-Button {
+  background: rgba(0, 240, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.DocSearch-Button:hover {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+}
+
+/* Blockquotes */
+.vp-doc blockquote {
+  border-left: 4px solid var(--cyber-blue);
+  background: rgba(0, 240, 255, 0.05);
+  box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.05);
+}
+
+/* Links in content */
+.vp-doc a {
+  color: var(--cyber-blue);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.vp-doc a:hover {
+  color: var(--cyber-pink);
+  border-bottom-color: var(--cyber-pink);
+  text-shadow: 0 0 10px var(--cyber-pink);
+}
+
+/* Footer */
+.VPFooter {
+  background: rgba(10, 14, 26, 0.8);
+  border-top: 1px solid rgba(0, 240, 255, 0.3);
+  backdrop-filter: blur(20px);
+}
+
+/* Headings with gradient */
+.vp-doc h1,
+.vp-doc h2 {
+  background: linear-gradient(120deg, var(--cyber-blue), var(--cyber-pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  border-bottom-color: rgba(0, 240, 255, 0.2);
+}
+
+.vp-doc h3,
+.vp-doc h4 {
+  color: var(--cyber-blue);
+  font-weight: 600;
+}
+
+/* Custom container styles */
+.vp-doc .custom-block {
+  border-radius: 8px;
+  border: 1px solid;
+  backdrop-filter: blur(10px);
+}
+
+.vp-doc .custom-block.tip {
+  border-color: rgba(0, 255, 159, 0.3);
+  background: rgba(0, 255, 159, 0.05);
+}
+
+.vp-doc .custom-block.warning {
+  border-color: rgba(255, 255, 0, 0.3);
+  background: rgba(255, 255, 0, 0.05);
+}
+
+.vp-doc .custom-block.danger {
+  border-color: rgba(255, 0, 255, 0.3);
+  background: rgba(255, 0, 255, 0.05);
+}
+
+/* Animations */
+@keyframes neon-pulse {
+  0%, 100% {
+    text-shadow: 0 0 10px var(--cyber-blue),
+                 0 0 20px var(--cyber-blue),
+                 0 0 30px var(--cyber-blue);
+  }
+  50% {
+    text-shadow: 0 0 15px var(--cyber-blue),
+                 0 0 30px var(--cyber-blue),
+                 0 0 45px var(--cyber-blue),
+                 0 0 60px var(--cyber-pink);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .VPNav {
+    backdrop-filter: blur(15px) saturate(150%);
+  }
+
+  .VPSidebar {
+    backdrop-filter: blur(15px);
+  }
+}
