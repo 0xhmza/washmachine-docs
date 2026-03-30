@@ -15,6 +15,7 @@ export default defineConfig({
       { text: 'Quickstart', link: '/getting-started' },
       { text: 'Reference', link: '/cli-reference' },
       { text: 'Architecture', link: '/architecture' },
+      { text: 'Bin2Shell', link: '/bin2shell' },
       { text: 'GitHub', link: 'https://github.com/0xhmza/washmachine' }
     ],
 
@@ -35,7 +36,8 @@ export default defineConfig({
       {
         text: 'Internals',
         items: [
-          { text: 'Architecture', link: '/architecture' }
+          { text: 'Architecture', link: '/architecture' },
+          { text: 'Bin2Shell Integration', link: '/bin2shell' }
         ]
       }
     ],

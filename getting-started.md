@@ -1,15 +1,15 @@
 # Quickstart
 
-Welcome to Washmachine—the fast lane for YAML-driven shellcode loader workflows.
+This page defines a minimal technical path to install Washmachine, validate runtime dependencies, and execute the primary CLI workflows.
 
-If you want a clean first run with zero guesswork, follow this page top-to-bottom.
+## Scope
 
-## What you get
+After completing this page, you will have:
 
-- A shared pipeline available as CLI and desktop app
-- Template + snippet composition from one runtime catalog
-- Optional Bin2Shell-backed encoding/envelope flow
-- Built-in PE analysis and transformation operations
+- a working build of the solution,
+- a validated CLI runtime,
+- a provisioned Bin2Shell integration (optional),
+- and familiarity with output artifacts and logs.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ If you want a clean first run with zero guesswork, follow this page top-to-botto
 | C++ Compiler | MSVC, MinGW-w64 `g++`, or `clang++` |
 | Python | 3.10+ (required for Bin2Shell features) |
 
-### Desktop app (`washmachine`)
+### Desktop application (`washmachine`)
 
 | Component | Version |
 |---|---|
@@ -32,7 +32,7 @@ If you want a clean first run with zero guesswork, follow this page top-to-botto
 | C++ Compiler | MSVC, MinGW-w64 `g++`, or `clang++` |
 | Python | 3.10+ (required for Bin2Shell features) |
 
-## 1) Clone and build
+## 1) Clone and build the solution
 
 ```powershell
 git clone https://github.com/0xhmza/washmachine.git
@@ -40,10 +40,20 @@ cd washmachine
 dotnet build washmachine.sln
 ```
 
-## 2) Run a core CLI flow
+## 2) Validate command availability
 
 ```powershell
-# Compile a loader from shellcode
+washmachine-cli --help
+washmachine-cli list --templates
+washmachine-cli list --compilers
+```
+
+This confirms that the CLI executable is available, the runtime catalog is readable, and compiler discovery is functioning.
+
+## 3) Execute core CLI workflows
+
+```powershell
+# Compile a loader from shellcode input
 washmachine-cli compile -s payload.bin -t shellcode-minimal
 
 # Analyze PE metadata and sections
@@ -56,28 +66,25 @@ washmachine-cli strip target.exe -o extracted.bin
 washmachine-cli backdoor --pe target.exe -s payload.bin -o patched.exe
 ```
 
-## 3) Provision Bin2Shell (optional but recommended)
+## 4) Provision Bin2Shell integration (optional)
 
 ```powershell
 washmachine-cli provision
 ```
 
-The desktop app can auto-provision Bin2Shell on first use when required.
+Provisioning downloads and configures the assisting Bin2Shell tool used by encoder/envelope flows. The desktop application can also invoke provisioning when these features are requested.
 
-## 4) Know your output paths
+## 5) Verify output locations
 
-- Compiled binaries: `temp/cpp/Compiled Binaries/`
-- Session logs: `logging/session_<timestamp>_<uuid>/`
-- Test harness results: `test_results.json`
+- Generated C++ sources and compiled binaries: `temp/cpp/Compiled Binaries/`
+- Session-scoped diagnostic logs: `logging/session_<timestamp>_<uuid>/`
+- Test harness summary file: `test_results.json`
 
-## Next moves
+## 6) Continue with detailed references
 
-- Continue with [CLI Reference](/cli-reference) for complete options
-- Continue with [Architecture](/architecture) for internals and flow
-
-::: tip Exclusivity Note
-Washmachine’s edge is its single-catalog operating model: one YAML source, many execution paths, consistent outcomes.
-:::
+- Read [CLI Reference](/cli-reference) for command-level options and argument contracts.
+- Read [Architecture](/architecture) for internal service flow and pipeline stages.
+- Read [Bin2Shell Integration](/bin2shell) for encoder/envelope implementation details and data contracts.
 
 ::: warning Security Notice
 For educational and authorized security testing purposes only.
