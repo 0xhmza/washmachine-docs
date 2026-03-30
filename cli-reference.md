@@ -1,32 +1,36 @@
+---
+outline: deep
+---
+
 # CLI Reference
 
 ```text
 washmachine-cli <command> [options]
 ```
 
-This reference documents the public CLI contract for Washmachine. Command names, required arguments, and options listed here are intended for scripting and repeatable automation.
+Public CLI contract for Washmachine. Command names, required arguments, and options listed here are intended for scripting and repeatable automation.
 
-## Global behavior
+::: tip Global Behavior
+- **Parser style:** `washmachine-cli <command> [options]`
+- **Exit model:** non-zero on argument, runtime, or processing failure
+- **Output model:** human-readable text by default; selected commands support `--json`
+- **Verbosity:** `--verbose` on supported commands increases diagnostic output
+- **Catalog dependency:** template/snippet/encoder/envelope selection depends on runtime YAML assets
+- **Compiler dependency:** `compile` requires at least one discoverable C++ toolchain
+- **Provisioning:** encoding/envelope features may require `provision` when external tools are absent
+:::
 
-- Command parser style: `washmachine-cli <command> [options]`
-- Exit model: non-zero on argument, runtime, or processing failure
-- Output model: human-readable text by default; selected commands support `--json`
-- Verbosity control: `--verbose` on supported commands increases diagnostic output
-- Catalog dependency: template/snippet/encoder/envelope selection depends on runtime YAML assets
-- Compiler dependency: `compile` requires at least one discoverable C++ toolchain
-- Provisioning dependency: encoding/envelope features may require `provision` when external tools are absent
-
-## Command index
+## Command Index
 
 | Command | Description |
 |---|---|
-| `compile` | Build a shellcode loader executable |
-| `analyze` | Analyze a PE file (headers, sections, imports, code caves) |
-| `strip` | Extract executable bytes to `.bin` payloads |
-| `backdoor` | Inject shellcode into an existing PE file |
-| `list` | List templates, encoders, snippets, or compilers |
-| `provision` | Download/install required external tools (Bin2Shell) |
-| `test` | Run the automated test harness |
+| [`compile`](#compile) | Build a shellcode loader executable |
+| [`analyze`](#analyze) | Analyze a PE file (headers, sections, imports, code caves) |
+| [`strip`](#strip) | Extract executable bytes to `.bin` payloads |
+| [`backdoor`](#backdoor) | Inject shellcode into an existing PE file |
+| [`list`](#list) | List templates, encoders, snippets, or compilers |
+| [`provision`](#provision) | Download/install required external tools (Bin2Shell) |
+| [`test`](#test) | Run the automated test harness |
 
 ## `compile`
 
@@ -181,6 +185,6 @@ washmachine-cli test --shellcode messagebox.bin --phase 1 --url http://host/payl
 washmachine-cli test --phase 3 --test-assets "testing assets\\binary\\shellcodes"
 ```
 
-::: warning Security Notice
-For educational and authorized security testing purposes only.
+::: warning ⚠️ Security Notice
+This toolkit is intended **exclusively** for educational and authorized security testing purposes.
 :::

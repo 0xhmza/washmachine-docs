@@ -1,15 +1,17 @@
+---
+outline: deep
+---
+
 # Quickstart
 
-This page defines a minimal technical path to install Washmachine, validate runtime dependencies, and execute the primary CLI workflows.
+Minimal technical path to install Washmachine, validate runtime dependencies, and execute primary CLI workflows.
 
-## Scope
-
-After completing this page, you will have:
-
-- a working build of the solution,
-- a validated CLI runtime,
-- a provisioned Bin2Shell integration (optional),
-- and familiarity with output artifacts and logs.
+::: tip After completing this page you will have
+- A working build of the solution
+- A validated CLI runtime
+- A provisioned Bin2Shell integration (optional)
+- Familiarity with output artifacts and logs
+:::
 
 ## Requirements
 
@@ -81,12 +83,12 @@ The desktop application can also invoke provisioning automatically when these fe
 - Session-scoped diagnostic logs: `logging/session_<timestamp>_<uuid>/`
 - Test harness summary file: `test_results.json`
 
-## 6) Continue with detailed references
+## Continue
 
-- Read [CLI Reference](/cli-reference) for command-level options and argument contracts.
-- Read [Architecture](/architecture) for internal service flow and pipeline stages.
-- Read [Bin2Shell Integration](/bin2shell) for encoder/envelope implementation details and data contracts.
+- [CLI Reference](/cli-reference) — command-level options and argument contracts
+- [Architecture](/architecture) — internal service flow and pipeline stages
+- [Bin2Shell](/bin2shell) — encoder/envelope implementation details and data contracts
 
-::: warning Security Notice
-For educational and authorized security testing purposes only.
+::: warning ⚠️ Security Notice
+This toolkit is intended **exclusively** for educational and authorized security testing purposes.
 :::

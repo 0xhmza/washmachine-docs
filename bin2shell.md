@@ -1,11 +1,15 @@
+---
+outline: deep
+---
+
 # Bin2Shell Integration
 
 This page documents Bin2Shell as the assisting tool used by Washmachine for payload encoding and envelope generation workflows.
 
-## Project reference
+## Project Reference
 
-- Upstream repository: [Bin2Shell](https://github.com/0xhmza/bin2shell)
-- Role in Washmachine: optional transformation stage used by compile workflows when encoder/envelope options are selected
+- **Upstream:** [Bin2Shell on GitHub](https://github.com/0xhmza/bin2shell)
+- **Role:** optional transformation stage used by compile workflows when encoder/envelope options are selected
 
 ## Purpose
 
@@ -56,29 +60,35 @@ High-level contract:
 3. Generated C++ inverse/decode content is incorporated into template rendering.
 4. Final source is compiled through the selected C++ toolchain.
 
-## Algorithms and options
+## Algorithms and Options
 
 Bin2Shell defines encoder and envelope algorithms by index in YAML catalogs.
 
-Documented encoder set:
+### Encoders
 
-- `[0]` none
-- `[1]` xor
-- `[2]` xor2
-- `[3]` arx8
-- `[4]` arx82
+| Index | Algorithm |
+|---|---|
+| `0` | none |
+| `1` | xor |
+| `2` | xor2 |
+| `3` | arx8 |
+| `4` | arx82 |
 
-Documented envelope set:
+### Envelopes
 
-- `[0]` none
-- `[1]` base91
-- `[2]` base64
-- `[3]` base32
+| Index | Format |
+|---|---|
+| `0` | none |
+| `1` | base91 |
+| `2` | base64 |
+| `3` | base32 |
 
 In Washmachine CLI, these are selected through:
 
-- `compile --encoder <index>`
-- `compile --envelope <index>`
+```powershell
+washmachine-cli compile --encoder <index>
+washmachine-cli compile --envelope <index>
+```
 
 ## Output behavior
 
@@ -132,6 +142,6 @@ Recommended validation sequence after provisioning:
 3. `washmachine-cli compile -s <payload.bin> --encoder <idx> --envelope <idx>`
 4. Inspect session logs and resulting artifacts for expected transform behavior.
 
-::: warning Security Notice
-For educational and authorized security testing purposes only.
+::: warning ⚠️ Security Notice
+This toolkit is intended **exclusively** for educational and authorized security testing purposes.
 :::

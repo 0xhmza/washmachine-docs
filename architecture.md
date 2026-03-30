@@ -1,8 +1,12 @@
+---
+outline: deep
+---
+
 # Architecture
 
 Washmachine is implemented as a shared-core system where CLI and desktop clients execute the same backend services and data contracts.
 
-## Solution layout
+## Solution Layout
 
 ```text
 washmachine.sln
@@ -11,7 +15,7 @@ washmachine.sln
 └── washmachine        (WinUI 3 desktop app)
 ```
 
-## Dependency graph
+## Dependency Graph
 
 ```text
 washmachine (GUI) ---> Washmachine.Core
@@ -20,7 +24,7 @@ Washmachine.Cli  ---> Washmachine.Core
 
 `Washmachine.Cli` and `washmachine` are sibling entry points. Neither depends on the other; both depend on `Washmachine.Core`.
 
-## Runtime configuration model
+## Runtime Configuration Model
 
 Core generation behavior is defined by runtime YAML assets (for example `Assets/vx_api_snippets.yaml`) that provide:
 
@@ -31,7 +35,7 @@ Core generation behavior is defined by runtime YAML assets (for example `Assets/
 
 This approach decouples generation behavior from UI implementation details.
 
-## Compile pipeline internals
+## Compile Pipeline Internals
 
 Primary flow executed through `CompilerService`:
 
@@ -43,7 +47,7 @@ Primary flow executed through `CompilerService`:
 6. Discover available compiler toolchain and build
 7. Save output artifact and session logs
 
-## Toolchain discovery
+## Toolchain Discovery
 
 `CompilerToolLocator` is responsible for selecting an available compiler from supported Windows toolchains:
 
@@ -53,20 +57,22 @@ Primary flow executed through `CompilerService`:
 
 Toolchain detection allows the same command surface to operate across multiple development environments.
 
-## Key shared services
+## Key Shared Services
 
 Notable components in `Washmachine.Core`:
 
-- `CompilerService`
-- `CompilerToolLocator`
-- `CppFileConverter`
-- `YamlCodeSnippetCatalogService`
-- `ShellcodeEncodingCatalogService`
-- `PeAnalyzerService`
-- `PeBackdoorService`
-- `RequirementProvisioner`
+| Service | Responsibility |
+|---|---|
+| `CompilerService` | Orchestrates the full compile pipeline |
+| `CompilerToolLocator` | Discovers available C++ toolchains |
+| `CppFileConverter` | Transforms sources into compilable C++ |
+| `YamlCodeSnippetCatalogService` | Loads template and snippet definitions |
+| `ShellcodeEncodingCatalogService` | Manages encoder/envelope catalog |
+| `PeAnalyzerService` | PE file analysis and inspection |
+| `PeBackdoorService` | Shellcode injection strategies |
+| `RequirementProvisioner` | External dependency setup |
 
-## PE operation services
+## PE Operation Services
 
 `PeAnalyzerService` and `PeBackdoorService` provide executable-focused workflows used by CLI commands:
 
@@ -74,21 +80,23 @@ Notable components in `Washmachine.Core`:
 - payload extraction support via strip flows,
 - and shellcode injection strategies for patch workflows.
 
-## Provisioning and external dependency integration
+## Provisioning and External Dependencies
 
 `RequirementProvisioner` handles dependency setup required for optional flows, especially Bin2Shell-backed encoder/envelope execution.
 
-## Logging and artifact model
+## Logging and Artifacts
 
 Runtime outputs are persisted into predictable locations:
 
-- generated and compiled outputs in `temp/cpp/Compiled Binaries/`,
-- per-session diagnostics in `logging/session_<timestamp>_<uuid>/`,
-- harness summary output in `test_results.json`.
+| Path | Content |
+|---|---|
+| `temp/cpp/Compiled Binaries/` | Generated C++ sources and compiled binaries |
+| `logging/session_<timestamp>_<uuid>/` | Per-session diagnostic logs |
+| `test_results.json` | Test harness summary output |
 
 This model supports command-line automation and post-run inspection.
 
-## Test harness model
+## Test Harness Model
 
 The CLI test harness (`washmachine-cli test`) covers:
 
@@ -98,18 +106,18 @@ The CLI test harness (`washmachine-cli test`) covers:
 
 Results are written to `test_results.json`.
 
-## Packaging notes
+## Packaging Notes
 
-### CLI package
+### CLI Package
 
 - `washmachine-cli.exe`
 - `Assets/vx_api_snippets.yaml`
 
-### GUI package
+### GUI Package
 
 - `washmachine.exe` and runtime output files
 - `Assets/vx_api_snippets.yaml`
 
-::: warning Security Notice
-For educational and authorized security testing purposes only.
+::: warning ⚠️ Security Notice
+This toolkit is intended **exclusively** for educational and authorized security testing purposes.
 :::

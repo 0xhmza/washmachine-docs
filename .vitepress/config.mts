@@ -2,18 +2,32 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'Washmachine',
-  description: 'CLI-first shellcode loader builder with a WinUI 3 desktop app',
+  description: 'YAML-driven shellcode loader generation and PE tooling — CLI + WinUI 3 desktop client',
   base: '/washmachine-docs/',
   cleanUrls: true,
   lastUpdated: true,
+  appearance: 'dark',
+
+  head: [
+    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
+    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
+    ['link', {
+      href: 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap',
+      rel: 'stylesheet'
+    }],
+    ['meta', { name: 'theme-color', content: '#0a0e1a' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'Washmachine — Shellcode Loader Toolkit' }],
+    ['meta', { property: 'og:description', content: 'YAML-driven shellcode loader generation and PE tooling' }],
+  ],
 
   themeConfig: {
-    siteTitle: 'Washmachine Docs',
+    siteTitle: '⚡ WASHMACHINE',
 
     nav: [
       { text: 'Overview', link: '/' },
       { text: 'Quickstart', link: '/getting-started' },
-      { text: 'Reference', link: '/cli-reference' },
+      { text: 'CLI Reference', link: '/cli-reference' },
       { text: 'Architecture', link: '/architecture' },
       { text: 'Bin2Shell', link: '/bin2shell' },
       { text: 'GitHub', link: 'https://github.com/0xhmza/washmachine' }
@@ -30,14 +44,14 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
-          { text: 'CLI Reference', link: '/cli-reference' }
+          { text: 'CLI Commands', link: '/cli-reference' }
         ]
       },
       {
         text: 'Internals',
         items: [
           { text: 'Architecture', link: '/architecture' },
-          { text: 'Bin2Shell Integration', link: '/bin2shell' }
+          { text: 'Bin2Shell', link: '/bin2shell' }
         ]
       }
     ],
@@ -46,7 +60,7 @@ export default defineConfig({
 
     footer: {
       message: 'For educational and authorized security testing purposes only.',
-      copyright: 'Copyright © 2026 Washmachine'
+      copyright: '© 2026 Washmachine'
     },
 
     editLink: {
@@ -56,6 +70,8 @@ export default defineConfig({
 
     search: {
       provider: 'local'
-    }
+    },
+
+    outline: { level: [2, 3] }
   }
 })
