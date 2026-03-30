@@ -72,7 +72,8 @@ washmachine-cli backdoor --pe target.exe -s payload.bin -o patched.exe
 washmachine-cli provision
 ```
 
-Provisioning downloads and configures the assisting Bin2Shell tool used by encoder/envelope flows. The desktop application can also invoke provisioning when these features are requested.
+Provisioning downloads and configures the Bin2Shell tool used by encoder/envelope flows.
+The desktop application can also invoke provisioning automatically when these features are requested.
 
 ## 5) Verify output locations
 

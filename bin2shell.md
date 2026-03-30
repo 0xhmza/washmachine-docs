@@ -4,7 +4,7 @@ This page documents Bin2Shell as the assisting tool used by Washmachine for payl
 
 ## Project reference
 
-- Upstream repository: `https://github.com/0xhmza/bin2shell`
+- Upstream repository: [Bin2Shell](https://github.com/0xhmza/bin2shell)
 - Role in Washmachine: optional transformation stage used by compile workflows when encoder/envelope options are selected
 
 ## Purpose
