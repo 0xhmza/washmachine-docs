@@ -85,6 +85,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Prevent page content from hiding behind the fixed navbar */
+.VPDoc {
+  padding-top: var(--vp-nav-height) !important;
+}
+
 body {
   background: var(--vp-c-bg);
 }
