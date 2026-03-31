@@ -200,7 +200,7 @@ body {
 
 .VPHero {
   position: relative;
-  padding-top: 48px !important;
+  padding-top: calc(var(--vp-nav-height) + 48px) !important;
   padding-bottom: 48px !important;
 }
 
