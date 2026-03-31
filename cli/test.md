@@ -17,11 +17,61 @@ washmachine-cli test [options]
 
 ## Test phases
 
-| Phase | Coverage | Description |
-|---|---|---|
-| **1** | Encoder × Envelope × Web helper | Tests all encoding and envelope combinations with web delivery |
-| **2** | Template × Snippet permutations | Tests all templates with snippet combinations |
-| **3** | Multiple shellcode inputs | Tests compilation with each `.bin` file in the assets directory |
+The harness runs up to three phases, each exercising a different axis of the generation pipeline. For detailed phase descriptions, see [Testing Guide](/guide/testing).
+
+| Phase | Coverage |
+|---|---|
+| **1** | Encoder × Envelope × Web helper combinations |
+| **2** | Template × Snippet permutations |
+| **3** | Multiple shellcode inputs from an assets directory |
+
+## Result categories
+
+Each test sample is classified into one of the following categories in the output:
+
+| Category | Meaning |
+|---|---|
+| **Passed** | Compilation succeeded and the binary executed without error |
+| **Compile failure** | The C++ source failed to compile — check `build_log.txt` for compiler errors. Common causes: incompatible snippet combinations, missing libraries, or toolchain issues. |
+| **Runtime failure** | The binary compiled but crashed or returned a non-zero exit code at runtime. This may indicate a bug in the generated loader or an incompatible shellcode payload. |
+| **Security-blocked** | The binary was blocked by Windows Defender or another security product before or during execution. This is expected in security testing — it means the AV detected the sample. |
+
+## Interpreting `test_results.json`
+
+After a test run completes, the results file contains a JSON object with aggregate counts and per-sample details:
+
+```json
+{
+  "total": 42,
+  "passed": 35,
+  "compile_failures": 2,
+  "runtime_failures": 1,
+  "security_blocked": 4,
+  "results": [
+    {
+      "template": "default",
+      "encoder": 1,
+      "envelope": 2,
+      "status": "passed",
+      "output": "20250101_120000-a1b2c.exe"
+    },
+    {
+      "template": "stealth",
+      "encoder": null,
+      "envelope": null,
+      "status": "compile_failure",
+      "error": "error C2065: 'undeclared_var': undeclared identifier"
+    }
+  ]
+}
+```
+
+- **`total`** — Number of test permutations executed
+- **`passed`** — Samples that compiled and ran successfully
+- **`compile_failures`** — Samples where compilation failed; review the `error` field and corresponding `build_log.txt`
+- **`runtime_failures`** — Samples that compiled but failed at execution
+- **`security_blocked`** — Samples quarantined or blocked by AV; expected in detection testing
+- **`results[]`** — Per-sample detail including template, encoder/envelope IDs, status, and output file or error message
 
 ## Examples
 

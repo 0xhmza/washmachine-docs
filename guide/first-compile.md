@@ -48,6 +48,10 @@ washmachine-cli analyze target.exe
 washmachine-cli analyze target.exe --json
 ```
 
+::: tip Deep dive
+For a detailed look at how PE analysis works under the hood, see [PE Analysis Internals](/internals/pe-analysis).
+:::
+
 ## Extract shellcode from a PE
 
 ```powershell

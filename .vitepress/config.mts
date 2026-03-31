@@ -45,7 +45,8 @@ export default defineConfig({
           { text: 'Setup', link: '/guide/setup' },
           { text: 'First Compilation', link: '/guide/first-compile' },
           { text: 'Output & Artifacts', link: '/guide/output' },
-          { text: 'Testing', link: '/guide/testing' }
+          { text: 'Testing', link: '/guide/testing' },
+          { text: 'Troubleshooting', link: '/guide/troubleshooting' }
         ]
       },
       {
