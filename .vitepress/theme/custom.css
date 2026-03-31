@@ -86,7 +86,7 @@ html {
 }
 
 /* Prevent page content from hiding behind the fixed navbar */
-.VPDoc {
+.VPContent {
   padding-top: var(--vp-nav-height) !important;
 }
 

@@ -20,7 +20,7 @@ export default defineConfig({
     }],
     ['meta', { name: 'theme-color', content: '#0a0e1a' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'Washmachine — Shellcode Loader Toolkit' }],
+    ['meta', { property: 'og:title', content: 'Washmachine — Template based Evasion Framework' }],
     ['meta', { property: 'og:description', content: 'YAML-driven shellcode loader generation and PE tooling' }],
   ],
 

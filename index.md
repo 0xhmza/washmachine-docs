@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: "WASHMACHINE"
-  text: "Shellcode Loader Toolkit"
+  text: "Template based Evasion Framework"
   tagline: "YAML-driven loader generation · PE analysis & injection · Encoder/envelope transforms · CLI + Desktop"
   actions:
     - theme: brand
