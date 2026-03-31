@@ -30,10 +30,10 @@ export default defineConfig({
 
     nav: [
       { text: 'Overview', link: '/' },
-      { text: 'Quickstart', link: '/getting-started' },
-      { text: 'CLI Reference', link: '/cli-reference' },
-      { text: 'Architecture', link: '/architecture' },
-      { text: 'Bin2Shell', link: '/bin2shell' },
+      { text: 'Guide', link: '/guide/setup' },
+      { text: 'CLI', link: '/cli/overview' },
+      { text: 'Internals', link: '/internals/overview' },
+      { text: 'Bin2Shell', link: '/bin2shell/overview' },
       { text: 'GitHub', link: 'https://github.com/0xhmza/washmachine' }
     ],
 
@@ -42,20 +42,42 @@ export default defineConfig({
         text: 'Getting Started',
         items: [
           { text: 'Welcome', link: '/' },
-          { text: 'Quickstart', link: '/getting-started' }
+          { text: 'Setup', link: '/guide/setup' },
+          { text: 'First Compilation', link: '/guide/first-compile' },
+          { text: 'Output & Artifacts', link: '/guide/output' },
+          { text: 'Testing', link: '/guide/testing' }
         ]
       },
       {
-        text: 'Reference',
+        text: 'CLI Reference',
         items: [
-          { text: 'CLI Commands', link: '/cli-reference' }
+          { text: 'Overview', link: '/cli/overview' },
+          { text: 'compile', link: '/cli/compile' },
+          { text: 'analyze', link: '/cli/analyze' },
+          { text: 'strip', link: '/cli/strip' },
+          { text: 'backdoor', link: '/cli/backdoor' },
+          { text: 'list', link: '/cli/list' },
+          { text: 'provision', link: '/cli/provision' },
+          { text: 'test', link: '/cli/test' }
         ]
       },
       {
         text: 'Internals',
         items: [
-          { text: 'Architecture', link: '/architecture' },
-          { text: 'Bin2Shell', link: '/bin2shell' }
+          { text: 'Architecture', link: '/internals/overview' },
+          { text: 'YAML Catalog', link: '/internals/yaml-catalog' },
+          { text: 'Compile Pipeline', link: '/internals/compile-pipeline' },
+          { text: 'PE Analysis', link: '/internals/pe-analysis' },
+          { text: 'PE Injection', link: '/internals/pe-injection' },
+          { text: 'Build & Packaging', link: '/internals/build' }
+        ]
+      },
+      {
+        text: 'Bin2Shell',
+        items: [
+          { text: 'Overview', link: '/bin2shell/overview' },
+          { text: 'Integration', link: '/bin2shell/integration' },
+          { text: 'Web & Security', link: '/bin2shell/advanced' }
         ]
       }
     ],

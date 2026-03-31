@@ -8,10 +8,10 @@ hero:
   actions:
     - theme: brand
       text: ⚡ Get Started
-      link: /getting-started
+      link: /guide/setup
     - theme: alt
       text: CLI Reference
-      link: /cli-reference
+      link: /cli/overview
     - theme: alt
       text: GitHub →
       link: https://github.com/0xhmza/washmachine
@@ -20,32 +20,32 @@ features:
   - icon: 🧬
     title: Shared Core Architecture
     details: "Three-project .NET 8 solution — Washmachine.Core hosts 16 services (compiler, PE analysis, backdoor, strip, catalog, provisioning) consumed by both the CLI and WinUI 3 desktop client through a unified pipeline."
-    link: /architecture
+    link: /internals/overview
     linkText: Explore architecture →
   - icon: ⚙️
     title: YAML-Controlled Generation
     details: "10 snippet sections, 6 templates, and 50+ evasion techniques loaded from a runtime YAML catalog (~1,400 lines). Anti-debugging, anti-sandbox, process injection, UAC bypass — fully configurable per compilation."
-    link: /cli-reference
+    link: /cli/compile
     linkText: View commands →
   - icon: 🔍
     title: PE Analysis & Injection
     details: "Deep PE inspection with headers, sections, imports, exports, TLS callbacks, code caves, and a 0–100 security score. Backdoor injection via code cave, new section, or section extension with register-safe carrier stubs."
-    link: /architecture#pe-analysis-engine
+    link: /internals/pe-analysis
     linkText: See PE tooling →
   - icon: 🧪
     title: Automated Test Harness
     details: "Three-phase validation: encoder × envelope × web combinations, template × snippet permutations, and multi-shellcode asset testing. JSON output for CI/CD integration."
-    link: /getting-started#_6-run-the-test-harness-optional
+    link: /guide/testing
     linkText: Try it now →
   - icon: 🔗
     title: Bin2Shell Integration
     details: "Optional encoding (XOR, ARX8) and envelope (Base91, Base64, Base32) stages powered by Bin2Shell. Web delivery mode separates payload from loader with runtime HTTP fetch and reconstruction."
-    link: /bin2shell
+    link: /bin2shell/overview
     linkText: Learn more →
   - icon: 🖥️
     title: Desktop Application
     details: "WinUI 3 interface with Mica backdrop, visual shellcode source selection, template configuration, compiler detection, and a web payload wizard for guided encoding workflows."
-    link: /architecture#desktop-application
+    link: /internals/overview#desktop-application
     linkText: View desktop docs →
 ---
 
@@ -83,10 +83,13 @@ Washmachine is a Windows-focused shellcode loader generation toolkit. It compile
 
 | Page | Description |
 |---|---|
-| [Quickstart](/getting-started) | Prerequisites, build, first workflows, REPL, output paths, test harness |
-| [CLI Reference](/cli-reference) | All 7 commands with every option, JSON schemas, REPL, exit codes |
-| [Architecture](/architecture) | Compile pipeline, YAML catalog format, all services, PE tooling, settings |
-| [Bin2Shell](/bin2shell) | Encoder/envelope algorithms, web mode, YAML output contract, integration flow |
+| [Setup](/guide/setup) | Prerequisites, build, and validation |
+| [First Compilation](/guide/first-compile) | Compile, analyze, strip, and backdoor workflows |
+| [CLI Reference](/cli/overview) | All 7 commands with every option |
+| [Architecture](/internals/overview) | Solution layout, services, and desktop app |
+| [YAML Catalog](/internals/yaml-catalog) | Snippet sections, templates, and catalog format |
+| [Compile Pipeline](/internals/compile-pipeline) | Pipeline stages, toolchain discovery |
+| [Bin2Shell](/bin2shell/overview) | Encoder/envelope algorithms and integration |
 
 ::: warning ⚠️ Security Notice
 This toolkit is intended **exclusively** for educational and authorized security testing purposes.
