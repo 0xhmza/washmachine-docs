@@ -24,7 +24,7 @@ features:
     linkText: Explore architecture →
   - icon: ⚙️
     title: YAML-Controlled Generation
-    details: "10 snippet sections, 6 templates, and 50+ evasion techniques loaded from a runtime YAML catalog (~1,400 lines). Anti-debugging, anti-sandbox, process injection, UAC bypass — fully configurable per compilation."
+    details: "12 snippet sections, 7 templates, and 60+ evasion techniques loaded from a runtime YAML catalog (~2,700 lines). Anti-debugging, anti-sandbox, process injection, UAC bypass, persistence — fully configurable per compilation."
     link: /cli/compile
     linkText: View commands →
   - icon: 🔍
@@ -77,7 +77,7 @@ Washmachine is a Windows-focused shellcode loader generation toolkit. It compile
 | `Washmachine.Core` | .NET 8 class library | 16 services, 16 models — compile pipeline, PE tools, catalog, provisioning |
 | `Washmachine.Cli` | .NET 8 console app | 7 commands, interactive REPL, Spectre.Console rich output |
 | `washmachine` | .NET 8 WinUI 3 | 5 pages, wizard windows, Mica backdrop, 980×720 default |
-| `Assets/default.yaml` | YAML catalog | 10 snippet sections, 6 templates, ~1,400 lines |
+| `Assets/default.yaml` | YAML catalog | 12 snippet sections, 7 templates, ~2,700 lines |
 
 ## Documentation
 

