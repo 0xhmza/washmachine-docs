@@ -14,6 +14,15 @@ washmachine-cli compile --shellcode <file> [options]
 | `--shellcode-hex` | | Inline hex-encoded shellcode string |
 | `--shellcode-url` | `-u` | URL to fetch shellcode from at runtime |
 
+::: tip Working from a `.exe`
+The CLI `compile` command expects a flat `.bin`. To compile from an `.exe` source first convert it:
+
+- **Native shellcode-format PE** (donut output, sRDI, `pe2shellcode`) — flatten with [`strip`](/cli/strip) and feed the resulting `.bin` to `compile`.
+- **Managed (.NET) assembly** — convert to position-independent shellcode with [donut](https://github.com/TheWover/donut) (provisioned via [`provision`](/cli/provision)), then compile the resulting `.bin`.
+
+The desktop client performs this routing automatically when an `.exe` is selected as the shellcode source — see [Architecture → Desktop](/internals/overview#desktop-application).
+:::
+
 ## Options
 
 | Option | Alias | Type | Default | Description |

@@ -53,13 +53,24 @@ The service scans shellcode for Metasploit-style API hash constants and patches 
 
 ## PE Strip Service
 
-`PeStripService` (~455 lines) extracts raw bytes from PE files into flat binary payloads.
+`PeStripService` (~570 lines) extracts raw bytes from PE files into flat binary payloads.
 
 | Mode | Description |
 |---|---|
-| **EntryPointToEnd** | Extract from entry point offset to end of containing section |
-| **Section** | Extract the entire named section |
-| **AllExecutable** | Concatenate all sections with execute permission |
-| **RawRange** | Extract bytes at a specific file offset and length |
+| **EntryPointToEnd** | Extract from entry point offset to end of containing section (default) |
+| **Section** | Extract the entire named section (default name: `.text`) |
 
-Optional trailing-zero trimming removes null padding from extracted payloads.
+Optional trailing-zero trimming removes null padding from extracted payloads. The service also exposes `IsManagedPe(byte[])` — a lightweight check on `DataDirectory[14]` (CLR runtime header) used by the GUI to auto-detect managed (.NET) executables and route them through donut instead of raw stripping.
+
+## Donut Service
+
+`DonutService` (~185 lines) shells out to bundled `donut.exe` to convert managed (.NET) assemblies into position-independent shellcode. The compile pipeline routes `.exe` shellcode sources through donut whenever the input is a managed PE; native shellcode-format PEs go through `PeStripService` instead.
+
+| Option | Default | Description |
+|---|---|---|
+| `Arch` | `2` (x64) | Target arch — `1`=x86, `2`=x64, `3`=x86+x64 |
+| `Class` | *(unset)* | Fully-qualified class to invoke (DLLs / multi-EP assemblies) |
+| `Method` | `Main` | Method to invoke on `Class` |
+| `Params` | *(unset)* | Comma-separated args passed to the entry point |
+
+Donut is provisioned as an optional download — see [`provision`](/cli/provision).

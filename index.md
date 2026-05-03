@@ -60,7 +60,7 @@ Washmachine is a Windows-focused shellcode loader generation toolkit. It compile
 | **Compile** | Generate C++ loaders from shellcode with selectable templates, snippet combinations, and Bin2Shell encoding/envelope transforms |
 | **Analyze** | Deep PE inspection — headers, sections, imports, exports, code caves, suspicious APIs, security scoring (0–100) |
 | **Backdoor** | Inject shellcode into existing PE files via code cave, new section, or section extension injection with register preservation |
-| **Strip** | Extract raw shellcode from PE files — entry point, named section, all executable sections, or raw byte ranges |
+| **Strip** | Extract raw shellcode from PE files — entry point or named section. Managed (.NET) assemblies are auto-routed through donut for PIC conversion |
 | **Test** | Automated three-phase validation across encoder/envelope/template/snippet combinations |
 | **Provision** | Download and install Bin2Shell and external dependencies |
 
