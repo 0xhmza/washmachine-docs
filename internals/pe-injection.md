@@ -64,13 +64,35 @@ Optional trailing-zero trimming removes null padding from extracted payloads. Th
 
 ## Donut Service
 
-`DonutService` (~185 lines) shells out to bundled `donut.exe` to convert managed (.NET) assemblies into position-independent shellcode. The compile pipeline routes `.exe` shellcode sources through donut whenever the input is a managed PE; native shellcode-format PEs go through `PeStripService` instead.
+`DonutService` (~200 lines) shells out to bundled `donut.exe` to convert managed (.NET) assemblies into position-independent shellcode. The compile pipeline routes `.exe` shellcode sources through donut whenever the input is a managed PE; native shellcode-format PEs go through `PeStripService` instead.
+
+### Minimal-feature mode
+
+The service deliberately invokes donut with the **smallest** flag set that still produces a working payload — every optional feature that would embed signature-rich code (compression, threading, staging URL, wide-string encoding, runtime pinning) is left at its donut default and never enabled. The resulting shellcode contains only the donut loader stub and the embedded assembly, maximising target compatibility and keeping the donut-specific signature surface as small as possible.
+
+The full command line emitted is:
+
+```text
+donut.exe -a <arch> -b 1 -o <out.bin> [-c <class>] [-m <method>] [-p <params>] -i <input.exe>
+```
+
+| Flag | Always sent? | Reason |
+|---|---|---|
+| `-a <arch>` | yes | Target bitness — defaults to `3` (x86+x64) for maximum host compatibility |
+| `-b 1` | yes | **Disables** donut's AMSI/WLDP bypass blob; that stub is heavily signatured and can crash the loader on hardened/patched hosts |
+| `-o <out>` | yes | Output `.bin` path |
+| `-i <input>` | yes | Input .NET assembly (.exe / .dll) |
+| `-c <class>` | only if user-set | Fully-qualified class for DLLs or multi-entry-point assemblies |
+| `-m <method>` | only if user-set | Method to invoke (donut defaults to `Main`) |
+| `-p <params>` | only if user-set | Comma-separated entry-point args |
+
+### `DonutOptions` defaults
 
 | Option | Default | Description |
 |---|---|---|
-| `Arch` | `2` (x64) | Target arch — `1`=x86, `2`=x64, `3`=x86+x64 |
+| `Arch` | `3` (x86+x64) | Most-compatible bitness — runs in either a 32-bit or 64-bit host process |
 | `Class` | *(unset)* | Fully-qualified class to invoke (DLLs / multi-EP assemblies) |
-| `Method` | `Main` | Method to invoke on `Class` |
+| `Method` | *(unset → donut default)* | Method to invoke on `Class` (donut uses `Main`) |
 | `Params` | *(unset)* | Comma-separated args passed to the entry point |
 
 Donut is provisioned as an optional download — see [`provision`](/cli/provision).
