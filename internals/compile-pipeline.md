@@ -41,9 +41,9 @@ UiData (control-value snapshot)
 
 | Kind | Source | Behavior |
 |---|---|---|
-| **File** | `--shellcode <path>` | Read binary, convert to C++ byte array literal |
-| **Raw** | `--shellcode-hex <hex>` | Parse hex string, convert to byte array |
-| **URL** | `--shellcode-url <url>` | Emit C++ runtime code that fetches payload via WinHTTP |
+| **File** | `-Shellcode <path>` | Read binary, convert to C++ byte array literal |
+| **Raw** | `-ShellcodeHex <hex>` | Parse hex string, convert to byte array |
+| **URL** | `-ShellcodeUrl <url>` | Emit C++ runtime code that fetches payload via WinHTTP |
 | **Generic** | Built-in test payloads | Embed calc or MessageBox shellcode from catalog |
 | **WebPayload** | Bin2Shell web mode | Generate includes, declarations, fetch helper, decode logic |
 

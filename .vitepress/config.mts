@@ -53,11 +53,11 @@ export default defineConfig({
         text: 'CLI Reference',
         items: [
           { text: 'Overview', link: '/cli/overview' },
-          { text: 'compile', link: '/cli/compile' },
+          { text: 'encode', link: '/cli/compile' },
           { text: 'analyze', link: '/cli/analyze' },
           { text: 'strip', link: '/cli/strip' },
           { text: 'backdoor', link: '/cli/backdoor' },
-          { text: 'list', link: '/cli/list' },
+          { text: 'show / list', link: '/cli/list' },
           { text: 'provision', link: '/cli/provision' },
           { text: 'test', link: '/cli/test' }
         ]
@@ -66,6 +66,7 @@ export default defineConfig({
         text: 'Internals',
         items: [
           { text: 'Architecture', link: '/internals/overview' },
+          { text: 'Template Engine', link: '/internals/template-engine' },
           { text: 'YAML Catalog', link: '/internals/yaml-catalog' },
           { text: 'Compile Pipeline', link: '/internals/compile-pipeline' },
           { text: 'PE Analysis', link: '/internals/pe-analysis' },

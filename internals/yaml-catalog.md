@@ -68,15 +68,29 @@ templates:
 | **Guardrails** | `guardrail` | Yes | Environment variable checks, domain membership, date range validation, file existence, user activity |
 | **Decoy** | `decoy` | Yes | Open notepad/calculator, show MessageBox, create dummy files |
 | **UAC Bypass** | `uacb` | No | FodHelper registry hijack, ComputerDefaults registry hijack |
+| **Installation** | `installation` | No | Copy loader to a stable directory before persistence registers it. Sets `wash_install_path` so all subsequent snippets use the correct path |
 | **Persistence** | `persistence` | No | None (skip), HKCU Run Key, User Startup Folder, Scheduled Task (user/logon), HKLM Run Key, Logon Script (MPR/UserInitMprLogonScript), All-Users Startup Folder, Scheduled Task as SYSTEM at boot, Winlogon Userinit Hijack, WMI Permanent Event Subscription |
-| **Evasion** | `evasion` | Yes | Defender exclusions (self + all tracked persistence drops via `wash_copies[]`) |
+| **Evasion** | `evasion` | Yes | Defender exclusions (applied to every path in `wash_copies[]` — the running exe, the install destination, and all persistence drops) |
 | **Process Injection** | `psinjection` | No | NtCreateSection + NtMapViewOfSection, VirtualAllocEx + CreateRemoteThread, QueueUserAPC |
 | **Shellcode Execution** | `shellcodeexecution` | No | VirtualAlloc RW→RX, HeapAlloc, CreateThread, NtCreateThreadEx, fiber, callback, threadpool, syscall |
 | **Generic Payload** | `genericshellcode` | No | Built-in calc.exe and MessageBox shellcodes for testing (used as shellcode source, not a template placeholder) |
 
+## Installation techniques
+
+The `installation` section is single-select and executed **before** persistence and evasion so that those sections always operate on the stable installed path (see [Template Engine](/internals/template-engine) for the full coordination model).
+
+| ID | Location | Admin required | Text inputs |
+|---|---|---|---|
+| `None` | Run in-place (default) | No | — |
+| `AppDataDir` | `%APPDATA%\<subdir>\<file>` | No | Sub-directory, installed filename |
+| `LocalAppDataDir` | `%LOCALAPPDATA%\<subdir>\<file>` | No | Sub-directory, installed filename |
+| `ProgramDataDir` | `%ProgramData%\<subdir>\<file>` | Yes (`requires: [uac_bypass]`) | Sub-directory, installed filename |
+
+All non-`None` items: create the directory → `CopyFileW` → set `wash_install_path` → track with `wash_track()` → relaunch from the new path → `ExitProcess(0)`. If already running from the install destination the copy + relaunch branch is skipped to prevent infinite relaunch loops.
+
 ## Persistence techniques
 
-The `persistence` section is single-select (one technique per build) and present in every template. Techniques are split by privilege level:
+The `persistence` section is single-select (one technique per build) and present in every template. Techniques are split by privilege level.
 
 ### User-level (no admin required)
 
@@ -113,12 +127,12 @@ Entries live in the WMI repository (CIM database), not in the registry or Task S
 
 ## Template definitions
 
-| Template | Description | Placeholders | Special behavior |
+| Template | Description | Snippet placeholders | Special behavior |
 |---|---|---|---|
-| **default** | Full-featured loader | 10 snippet sections | All sections: anti-emulation, guardrails, sandbox, anti-debug, decoy, UAC bypass, persistence, evasion, injection, execution |
-| **paranoid** | Defense-in-depth | 9 snippet sections + watchdog | Monitoring thread polling debuggers every 500ms; includes anti-analysis |
-| **aggressive** | Active countermeasures | 7 snippet sections + monitor | Terminates debuggers and analysis tools; includes anti-analysis |
-| **stealth** | Maximum evasion | 8 snippet sections | Six-layer sequential defense (anti-emulation → sandbox → guardrails → anti-debug → UAC → persistence → evasion → execution) |
-| **minimal** | Bare-bones loader | 3 snippet sections | `SHELLCODE_SOURCE` + `PERSISTENCE` + `SHELLCODE_EXECUTION`; no evasion layers |
-| **minimal-dll** | DLL entry point | 3 snippet sections | `DllMain` → `DLL_PROCESS_ATTACH` → `ExecutePayload()` with persistence + execution |
-| **sgncarrier** | SGN-encoded payload carrier | 3 snippet sections | Wraps a Shikata Ga Nai-encoded `.bin`; execution snippet must allocate RWX for the self-modifying decoder stub |
+| **default** | Full-featured loader | 11 | All sections: anti-emulation, guardrails, sandbox, anti-debug, decoy, UAC bypass, **installation**, persistence, evasion, injection, execution |
+| **paranoid** | Defense-in-depth | 10 + watchdog | Monitoring thread polling debuggers every 500ms; includes anti-analysis, installation |
+| **aggressive** | Active countermeasures | 8 + monitor | Terminates debuggers and analysis tools; includes anti-analysis, installation |
+| **stealth** | Maximum evasion | 9 | Sequential defense: anti-emulation → sandbox → guardrails → anti-debug → UAC → **installation** → persistence → evasion → execution |
+| **minimal** | Bare-bones loader | 4 | `SHELLCODE_SOURCE` + `INSTALLATION` + `PERSISTENCE` + `SHELLCODE_EXECUTION`; no evasion layers |
+| **minimal-dll** | DLL entry point | 4 | `DllMain` → `DLL_PROCESS_ATTACH` → `ExecutePayload()` with installation + persistence + execution |
+| **sgncarrier** | SGN-encoded payload carrier | 4 | Wraps a Shikata Ga Nai-encoded `.bin`; execution snippet must allocate RWX for the self-modifying decoder stub |
