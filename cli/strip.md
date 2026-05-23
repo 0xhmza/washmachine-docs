@@ -28,6 +28,8 @@ washmachine-cli strip <pe-file> [options]
 |---|---|---|
 | `ep` | `entry-point` | Extract from entry point to end of containing section (default) |
 | `section` | | Extract the entire named section |
+| `all-exec` | | Concatenate every executable section |
+| `range` | | Extract an explicit `start:length` byte range — both decimal and hex accepted |
 
 ::: tip Use `--analyze` first
 Run `strip <pe-file> --analyze` to inspect the section layout, entry-point location, and an estimated extracted size before committing to a mode. The analyze view also flags managed (.NET) PEs, for which raw stripping does **not** produce working shellcode — use [donut](https://github.com/TheWover/donut) instead.
@@ -41,6 +43,12 @@ washmachine-cli strip loader.exe
 
 # Extract a specific section
 washmachine-cli strip loader.exe -m section --section .text -o payload.bin
+
+# Extract a raw byte range (hex or decimal)
+washmachine-cli strip loader.exe -m range --range 0x400:0x200
+
+# Concatenate every executable section
+washmachine-cli strip loader.exe -m all-exec
 
 # Keep trailing zero padding
 washmachine-cli strip loader.exe --no-trim

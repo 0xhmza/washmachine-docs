@@ -1,17 +1,23 @@
-# YAML Catalog
+# Playbook (YAML Catalog)
 
-Generation behavior is defined by a YAML catalog (`Assets/default.yaml`, ~2,700 lines) that is the single source of truth for all generation logic.
+Generation behavior is defined by a **playbook** — a YAML file that is the single source of truth for templates, snippets, and the wiring between them. The default playbook ships as `Assets/default.yaml` and is loaded by `PlaybookService` (formerly `YamlCodeSnippetCatalogService`) at startup.
 
-## What the catalog provides
+You can drop additional playbooks into `Assets/` and switch the active one through the GUI Settings page or the CLI — Washmachine looks for any `.yaml` / `.yml` file in the Assets directory and remembers the selection in `Assets/.active-playbook`.
+
+## What the playbook provides
 
 - **Template definitions** — complete C++ source templates with `{{PLACEHOLDER}}` tokens
 - **Snippet sections** — categorized C++ code fragments selectable per template
 - **Dynamic inputs** — UI-driven parameters (target process name, guardrail conditions)
 - **Encoder/envelope metadata** — algorithm catalogs loaded from Bin2Shell at runtime
 
-Adding new evasion techniques, injection methods, or template layouts requires only YAML edits — no recompilation.
+Adding new evasion techniques, injection methods, or template layouts requires only playbook edits — no recompilation.
 
-## Catalog structure
+## Validating a playbook
+
+A companion JSON Schema lives at `Assets/playbook.schema.json`. Point any YAML extension that supports JSON Schema (e.g. VS Code's yaml-language-server) at it for autocomplete and inline error reporting. `PlaybookService.ValidateCatalogShape` enforces the same contract at load time and produces operator-actionable error messages with section/item context.
+
+## Playbook structure
 
 ```yaml
 sections:

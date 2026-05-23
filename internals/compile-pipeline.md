@@ -12,7 +12,7 @@ UiData (control-value snapshot)
   ├─ Compiler discovery (CompilerToolLocator)
   │    └─ Search: manual → bundled → env vars → VS installs → PATH
   │
-  ├─ Template resolution ([YamlCodeSnippetCatalogService](/internals/yaml-catalog))
+  ├─ Template resolution ([PlaybookService](/internals/yaml-catalog))
   │    └─ Load YAML → parse sections → resolve template by ID
   │
   ├─ CppCompilationPlan construction

@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'Washmachine',
-  description: 'YAML-driven shellcode loader generation and PE tooling — CLI + WinUI 3 desktop client',
+  description: 'YAML-driven shellcode loader generation, LLVM obfuscation, and PE tooling — CLI + WinUI 3 desktop client',
   base: '/washmachine-docs/',
   cleanUrls: true,
   lastUpdated: true,
@@ -20,8 +20,8 @@ export default defineConfig({
     }],
     ['meta', { name: 'theme-color', content: '#0a0e1a' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'Washmachine — Template based Evasion Framework' }],
-    ['meta', { property: 'og:description', content: 'YAML-driven shellcode loader generation and PE tooling' }],
+    ['meta', { property: 'og:title', content: 'Washmachine — Template-based Evasion Framework' }],
+    ['meta', { property: 'og:description', content: 'YAML-driven shellcode loader generation, LLVM obfuscation, and PE tooling' }],
   ],
 
   themeConfig: {
@@ -57,7 +57,8 @@ export default defineConfig({
           { text: 'analyze', link: '/cli/analyze' },
           { text: 'strip', link: '/cli/strip' },
           { text: 'backdoor', link: '/cli/backdoor' },
-          { text: 'show / list', link: '/cli/list' },
+          { text: 'show', link: '/cli/list' },
+          { text: 'doctor', link: '/cli/doctor' },
           { text: 'provision', link: '/cli/provision' },
           { text: 'test', link: '/cli/test' }
         ]
@@ -67,19 +68,23 @@ export default defineConfig({
         items: [
           { text: 'Architecture', link: '/internals/overview' },
           { text: 'Template Engine', link: '/internals/template-engine' },
-          { text: 'YAML Catalog', link: '/internals/yaml-catalog' },
+          { text: 'Playbook (YAML Catalog)', link: '/internals/yaml-catalog' },
           { text: 'Compile Pipeline', link: '/internals/compile-pipeline' },
+          { text: 'LLVM Obfuscation Backend', link: '/internals/llvm-backend' },
           { text: 'PE Analysis', link: '/internals/pe-analysis' },
           { text: 'PE Injection', link: '/internals/pe-injection' },
-          { text: 'Build & Packaging', link: '/internals/build' }
+          { text: 'Build & Installer', link: '/internals/build' }
         ]
       },
       {
         text: 'Bin2Shell',
         items: [
           { text: 'Overview', link: '/bin2shell/overview' },
-          { text: 'Integration', link: '/bin2shell/integration' },
-          { text: 'Web & Security', link: '/bin2shell/advanced' }
+          { text: 'Encoders & Envelopes', link: '/bin2shell/encoders' },
+          { text: 'External Carriers', link: '/bin2shell/carriers' },
+          { text: 'Polymorphism', link: '/bin2shell/polymorphism' },
+          { text: 'Washmachine Integration', link: '/bin2shell/integration' },
+          { text: 'Web Mode & Security', link: '/bin2shell/advanced' }
         ]
       }
     ],

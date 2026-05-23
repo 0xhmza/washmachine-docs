@@ -1,4 +1,4 @@
-# Bin2Shell Integration
+# Washmachine Integration
 
 How Washmachine consumes Bin2Shell through its core services.
 
@@ -8,73 +8,112 @@ How Washmachine consumes Bin2Shell through its core services.
 
 Process wrapper that executes the Bin2Shell Python script:
 
-- Detects Python via `py` (Windows launcher) or `python3` (Unix)
-- Runs with UTF-8 encoding and no shell execution
-- Returns stdout as a string; throws on non-zero exit code
+- Detects Python via `py` (Windows launcher) or `python3` (Unix fallback)
+- Runs with UTF-8 stdout (Bin2Shell itself forces `sys.stdout.reconfigure(encoding="utf-8")`)
+- Returns stdout as a string; raises on non-zero exit code
+- Lives at `Washmachine.Core/Services/Bin2ShellRunner.cs`
 
 ### ShellcodeEncodingCatalogService
 
-Parses Bin2Shell help output (`bin2shell -h`) to dynamically build the encoder/envelope catalog:
+Parses the Bin2Shell catalog so the CLI can render `show encoders` / `show envelopes` without re-implementing the listing logic:
 
-- Recognizes section headers: "Available Encoders", "Available Envelopes", "Available Compressors"
-- Parses line format: `[<index>]  <name>  [<description>]`
-- Returns strongly-typed `ShellcodeEncodingCatalog` with categorized items
+- Invokes `bin2shell -h` and parses the formatted catalog footer
+- Recognises section headers: "available encoders", "available envelopes", "available carriers", "available web helpers"
+- Parses line format: `  [<index>] <name>  <description>`
+- Returns a strongly-typed `ShellcodeEncodingCatalog`
+
+### Bin2ShellWebOutputParser
+
+When `--web` is set, Bin2Shell emits a YAML bundle (`cpp_includes`, `cpp_web_fetch`, `cpp_payload_init`, `cpp_decode`, `payload`, `options`). This parser turns that bundle into typed C# objects, repairs C++ escape sequences, and exposes assembly helpers used by `CompilerService`.
 
 ## Compile-time integration flow
 
 ```text
 1. Washmachine resolves raw shellcode bytes (file / hex / URL)
-2. If --encoder or --envelope is set:
+2. If --encoder, --envelope, or --carrier is set:
    │
    ├─ Bin2ShellRunner.RunAsync() invokes Bin2Shell with:
    │   • Input shellcode file
    │   • Encoder index (-e)
    │   • Envelope index (-v)
-   │   • Algorithm catalog path (-y algos.yaml)
+   │   • Carrier (--carrier) + --carrier-out next to the build
+   │   • Polymorphism seed (--seed, optional)
+   │   • Catalog path (-y algos.yaml)
    │
-   ├─ Bin2ShellWebOutputParser parses YAML output
-   │   • Extracts C++ includes, declarations, decode logic
+   ├─ For inline mode: stdout is captured C++ source — injected
+   │   into the {{SHELLCODE_SOURCE}} placeholder.
+   │
+   ├─ For --web: Bin2ShellWebOutputParser parses the YAML bundle
+   │   • Extracts cpp_includes / cpp_web_fetch / cpp_payload_init / cpp_decode
    │   • Repairs C++ escape sequences
    │   • Parses payload checksum and length
    │
-   └─ Generated C++ code is injected into template placeholders
-       • Includes → PREAMBLE section
-       • Declarations + init + decode → SHELLCODE_SOURCE section
-       • Web fetch helper → PREAMBLE section (web mode)
-3. Template is rendered with encoded payload
-4. Compiler builds the final executable
+   └─ For --carrier: the wrapped carrier file (e.g. payload.png)
+       is copied alongside the build output. The emitted C++
+       contains the file-load + unwrap block.
+3. Template is rendered with the encoded payload section
+4. Compiler builds the final executable (cl.exe / clang++ / g++)
 ```
 
-## Algorithms
+## Pipeline mapping
 
-### Encoders
+| Bin2Shell output | Washmachine destination |
+|---|---|
+| Inline `unsigned char enc_buf[]` + inverse C++ | `{{SHELLCODE_SOURCE}}` placeholder |
+| Carrier load block + `__carrier_payload` vector | `{{SHELLCODE_SOURCE}}` placeholder |
+| Web bundle: `cpp_includes` | `{{PREAMBLE}}` placeholder |
+| Web bundle: `cpp_web_fetch` | `{{PREAMBLE}}` placeholder |
+| Web bundle: `cpp_payload_init` + `cpp_decode` | `{{SHELLCODE_SOURCE}}` placeholder |
+| Carrier file on disk | Copied next to the compiled `.exe` |
 
-| Index | Name | Description |
-|---|---|---|
-| `0` | none | No encoding; raw shellcode passthrough |
-| `1` | xor | Single-byte XOR cipher |
-| `2` | xor2 | Two-byte XOR cipher |
-| `3` | arx8 | 8-bit ARX (add-rotate-XOR) transform |
-| `4` | arx82 | Two-round 8-bit ARX transform |
+## CLI passthrough
 
-### Envelopes
+Washmachine's `encode` command surfaces every relevant Bin2Shell flag:
 
-| Index | Name | Description |
-|---|---|---|
-| `0` | none | No envelope; raw binary output |
-| `1` | base91 | Base91 text encoding (high density) |
-| `2` | base64 | Base64 text encoding (standard) |
-| `3` | base32 | Base32 text encoding (alphanumeric) |
+| Washmachine flag | Bin2Shell equivalent |
+|---|---|
+| `-Encoder <N>` | `-e <N>` |
+| `-Envelope <N>` | `-v <N>` |
+| `-Sgn` `-SgnCount` `-SgnMax` | Wraps Shikata Ga Nai *before* invoking Bin2Shell |
+| *(planned)* `-Carrier` | `--carrier` |
+| *(planned)* `-Seed` | `--seed` |
 
-### CLI usage
+::: tip Calling Bin2Shell directly
+You can always bypass Washmachine and call Bin2Shell standalone — it ships in the same `Tools/Bin2Shell/` directory the runner uses. The CLI is fully documented at the [Bin2Shell overview](/bin2shell/overview).
+:::
+
+## Standalone test matrix
+
+`Tools/Bin2Shell/testing.py` runs every encoder × envelope combination plus a carrier sweep and compiles each `.cpp` with a discovered compiler. The current matrix is **148 cases** (1 simple + 11 × 11 encoder/envelope + 22 default fallbacks + 4 carrier sweeps):
 
 ```powershell
-# Compile with XOR encoding
-washmachine-cli compile -s payload.bin -e 1
-
-# Compile with XOR encoding and Base91 envelope
-washmachine-cli compile -s payload.bin -e 1 -v 1
-
-# List available options
-washmachine-cli list encoders
+cd Tools\Bin2Shell
+python testing.py --out report.html `
+  --compiler "C:\Program Files\LLVM\bin\clang++.exe"
 ```
+
+Report headline:
+
+```text
+Totals: 148 cases, 0 main errors, 0 compile errors, 0 compile skipped, 148 compile OK
+```
+
+This is the same harness Washmachine's CI uses to gate Bin2Shell updates.
+
+## Provisioning
+
+Bin2Shell is auto-provisioned on first use of encoding/envelope/carrier features. Trigger it manually:
+
+```powershell
+washmachine-cli provision
+```
+
+…and confirm with:
+
+```powershell
+washmachine-cli doctor       # checks Bin2Shell + LLVM + MSVC
+washmachine-cli show encoders
+washmachine-cli show envelopes
+```
+
+See [`provision`](/cli/provision) and [`doctor`](/cli/doctor) for the full reference.

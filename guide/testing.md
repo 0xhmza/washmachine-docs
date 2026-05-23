@@ -52,5 +52,5 @@ washmachine-cli provision
 This downloads the Bin2Shell Python tool from GitHub and installs it to `Tools/Bin2Shell/`. Verify:
 
 ```powershell
-washmachine-cli list encoders
+washmachine-cli show encoders
 ```

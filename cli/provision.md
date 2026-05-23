@@ -49,7 +49,7 @@ Running `provision` again overwrites any tool whose target directory already exi
 After provisioning, confirm success by listing available encoders:
 
 ```powershell
-washmachine-cli list encoders
+washmachine-cli show encoders
 ```
 
 If encoders are listed, Bin2Shell is wired up correctly. If the list is empty, check:
