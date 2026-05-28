@@ -79,13 +79,7 @@ The mismatch guard catches the common deployment mistake of forgetting to update
 
 ### Updating the URL
 
-`Bin2ShellWebOutputParser` exposes `ReplacePayloadUrl(url)` to rewrite the embedded URL between build and ship, so a single compiled loader can be retargeted without recompiling:
-
-```csharp
-var bundle = parser.Parse(bin2shellYaml);
-bundle.ReplacePayloadUrl("https://cdn.example.com/payload.b64");
-File.WriteAllText("loader_final.cpp", bundle.BuildShellcodeSourceBlock());
-```
+The embedded payload URL can be rewritten between build and ship, so a single compiled loader can be retargeted without recompiling. Open the generated `.cpp` file and update the `code_blob_payload_url` constant to point at your new endpoint before passing it to the compiler.
 
 ## Security and trust model
 

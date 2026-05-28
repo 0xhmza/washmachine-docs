@@ -1,6 +1,6 @@
 # PE Injection
 
-`PeBackdoorService` (~1,260 lines) injects shellcode into PE files with register-safe carrier stubs and optional encryption.
+The `backdoor` command injects shellcode into PE files with register-safe carrier stubs and optional encryption.
 
 ## Injection methods
 
@@ -36,13 +36,13 @@ jmp original_entry_point   ← resume
 
 ## Exit call patching
 
-The service scans shellcode for Metasploit-style API hash constants and patches destructive exit calls:
+The injector scans shellcode for Metasploit-style API hash constants and replaces destructive exit calls:
 
-| Hash | Original API | Patched To |
+| Original API | Replaced With | Effect |
 |---|---|---|
-| `0x56A2B5F0` | `ExitProcess` | `ExitThread` |
-| `0x0A2A1DE0` | `ExitThread` | *(preserved)* |
-| `0x6F721347` | `RtlExitUserThread` | *(preserved)* |
+| `ExitProcess` | `ExitThread` | Prevents the host process from terminating |
+| `ExitThread` | *(preserved)* | Already thread-safe |
+| `RtlExitUserThread` | *(preserved)* | Already thread-safe |
 
 ## Post-injection operations
 
@@ -51,48 +51,29 @@ The service scans shellcode for Metasploit-style API hash constants and patches 
 3. **PE checksum recalculation** — updates the optional header checksum
 4. **Session logging** — writes full audit trail
 
-## PE Strip Service
+## PE Strip
 
-`PeStripService` (~570 lines) extracts raw bytes from PE files into flat binary payloads.
+The `strip` command extracts raw bytes from PE files into flat binary payloads.
 
 | Mode | Description |
 |---|---|
 | **EntryPointToEnd** | Extract from entry point offset to end of containing section (default) |
 | **Section** | Extract the entire named section (default name: `.text`) |
 
-Optional trailing-zero trimming removes null padding from extracted payloads. The service also exposes `IsManagedPe(byte[])` — a lightweight check on `DataDirectory[14]` (CLR runtime header) used by the GUI to auto-detect managed (.NET) executables and route them through donut instead of raw stripping.
+Optional trailing-zero trimming removes null padding from extracted payloads. Managed (.NET) executables are auto-detected and routed through Donut instead of raw stripping.
 
-## Donut Service
+## Donut
 
-`DonutService` (~200 lines) shells out to bundled `donut.exe` to convert managed (.NET) assemblies into position-independent shellcode. The compile pipeline routes `.exe` shellcode sources through donut whenever the input is a managed PE; native shellcode-format PEs go through `PeStripService` instead.
+Washmachine uses bundled `donut.exe` to convert managed (.NET) assemblies into position-independent shellcode. The compile pipeline routes `.exe` shellcode sources through Donut whenever the input is a managed PE; native shellcode-format PEs go through the strip path instead.
 
-### Minimal-feature mode
+The service invokes Donut with the smallest flag set that produces a working payload — optional features that embed signature-rich code (compression, staging URLs, wide-string encoding) are intentionally left disabled to maximise target compatibility and minimise the Donut-specific signature surface.
 
-The service deliberately invokes donut with the **smallest** flag set that still produces a working payload — every optional feature that would embed signature-rich code (compression, threading, staging URL, wide-string encoding, runtime pinning) is left at its donut default and never enabled. The resulting shellcode contains only the donut loader stub and the embedded assembly, maximising target compatibility and keeping the donut-specific signature surface as small as possible.
-
-The full command line emitted is:
-
-```text
-donut.exe -a <arch> -b 1 -o <out.bin> [-c <class>] [-m <method>] [-p <params>] -i <input.exe>
-```
-
-| Flag | Always sent? | Reason |
-|---|---|---|
-| `-a <arch>` | yes | Target bitness — defaults to `3` (x86+x64) for maximum host compatibility |
-| `-b 1` | yes | **Disables** donut's AMSI/WLDP bypass blob; that stub is heavily signatured and can crash the loader on hardened/patched hosts |
-| `-o <out>` | yes | Output `.bin` path |
-| `-i <input>` | yes | Input .NET assembly (.exe / .dll) |
-| `-c <class>` | only if user-set | Fully-qualified class for DLLs or multi-entry-point assemblies |
-| `-m <method>` | only if user-set | Method to invoke (donut defaults to `Main`) |
-| `-p <params>` | only if user-set | Comma-separated entry-point args |
-
-### `DonutOptions` defaults
-
-| Option | Default | Description |
-|---|---|---|
-| `Arch` | `3` (x86+x64) | Most-compatible bitness — runs in either a 32-bit or 64-bit host process |
-| `Class` | *(unset)* | Fully-qualified class to invoke (DLLs / multi-EP assemblies) |
-| `Method` | *(unset → donut default)* | Method to invoke on `Class` (donut uses `Main`) |
-| `Params` | *(unset)* | Comma-separated args passed to the entry point |
+| Flag | Purpose |
+|---|---|
+| `-a <arch>` | Target bitness — defaults to `3` (x86+x64) for maximum host compatibility |
+| `-b 1` | Disables Donut's built-in AMSI/WLDP bypass blob |
+| `-c <class>` | Fully-qualified class, for DLLs or multi-entry-point assemblies |
+| `-m <method>` | Method to invoke (defaults to `Main`) |
+| `-p <params>` | Comma-separated entry-point arguments |
 
 Donut is provisioned as an optional download — see [`provision`](/cli/provision).

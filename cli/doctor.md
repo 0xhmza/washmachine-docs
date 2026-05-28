@@ -12,7 +12,7 @@ washmachine-cli doctor [--json]
 |---|---|---|
 | **LLVM clang++** | Yes (for the obfuscation backend) | `Tools\LLVM\bin\clang++.exe` next to the executable, or `clang++.exe` on PATH |
 | **LLVM clang-cl** | Yes (for clang-cl + MSVC sysroot) | `Tools\LLVM\bin\clang-cl.exe`, or PATH |
-| **MSVC cl.exe** | Yes (sysroot for clang-cl) | Discovered via `CompilerToolLocator` — VS installer, `VCToolsInstallDir`, or PATH |
+| **MSVC cl.exe** | Yes (sysroot for clang-cl) | Discovered via VS installer, `VCToolsInstallDir`, or PATH |
 | **Bin2Shell** | Yes (for encoding/envelope features) | `Tools\Bin2Shell\main.py` |
 
 For each tool the report includes:
@@ -27,10 +27,10 @@ For each tool the report includes:
 
 The LLVM/clang minimum is set by the new pass-manager APIs the bundled obfuscation passes consume:
 
-| Constant | Value | Why |
+| Requirement | Value | Why |
 |---|---|---|
-| `ToolPreflightService.RequiredLlvmMajor` | **20** | `registerOptimizerEarlyEPCallback` with `ThinOrFullLTOPhase` (LLVM 16+), `getFirstNonPHIIt()` returning `BasicBlock::iterator` (LLVM 20+) |
-| `ToolPreflightService.RecommendedLlvmMajor` | **22** | Full obfuscation-pass API surface |
+| **Required minimum** | **20** | Bundled passes use new pass-manager APIs introduced in LLVM 16–20 |
+| **Recommended** | **22** | Full obfuscation-pass API surface |
 
 If the parsed major is < 20, `doctor` flags `INCOMPATIBLE` and the LLVM obfuscation backend will be unavailable at compile time. Other commands (analyze, strip, backdoor, encode without obfuscation) continue to work.
 

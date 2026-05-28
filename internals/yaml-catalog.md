@@ -1,8 +1,8 @@
-# Playbook (YAML Catalog)
+# Playbook Reference
 
-Generation behavior is defined by a **playbook** — a YAML file that is the single source of truth for templates, snippets, and the wiring between them. The default playbook ships as `Assets/default.yaml` and is loaded by `PlaybookService` (formerly `YamlCodeSnippetCatalogService`) at startup.
+Loader generation behaviour is defined by a **playbook** — a YAML file that is the single source of truth for templates, snippets, and the wiring between them. The default playbook ships as `Assets/default.yaml`.
 
-You can drop additional playbooks into `Assets/` and switch the active one through the GUI Settings page or the CLI — Washmachine looks for any `.yaml` / `.yml` file in the Assets directory and remembers the selection in `Assets/.active-playbook`.
+You can drop additional playbooks into `Assets/` and switch the active one through the GUI Settings page or the CLI. Washmachine looks for any `.yaml` / `.yml` file in the Assets directory and remembers the selection in `Assets/.active-playbook`.
 
 ## What the playbook provides
 
@@ -15,7 +15,7 @@ Adding new evasion techniques, injection methods, or template layouts requires o
 
 ## Validating a playbook
 
-A companion JSON Schema lives at `Assets/playbook.schema.json`. Point any YAML extension that supports JSON Schema (e.g. VS Code's yaml-language-server) at it for autocomplete and inline error reporting. `PlaybookService.ValidateCatalogShape` enforces the same contract at load time and produces operator-actionable error messages with section/item context.
+A companion JSON Schema lives at `Assets/playbook.schema.json`. Point any YAML extension that supports JSON Schema (e.g. VS Code's `yaml-language-server`) at it for autocomplete and inline error reporting.
 
 ## Playbook structure
 
@@ -74,71 +74,58 @@ templates:
 | **Guardrails** | `guardrail` | Yes | Environment variable checks, domain membership, date range validation, file existence, user activity |
 | **Decoy** | `decoy` | Yes | Open notepad/calculator, show MessageBox, create dummy files |
 | **UAC Bypass** | `uacb` | No | FodHelper registry hijack, ComputerDefaults registry hijack |
-| **Installation** | `installation` | No | Copy loader to a stable directory before persistence registers it. Sets `wash_install_path` so all subsequent snippets use the correct path |
-| **Persistence** | `persistence` | No | None (skip), HKCU Run Key, User Startup Folder, Scheduled Task (user/logon), HKLM Run Key, Logon Script (MPR/UserInitMprLogonScript), All-Users Startup Folder, Scheduled Task as SYSTEM at boot, Winlogon Userinit Hijack, WMI Permanent Event Subscription |
-| **Evasion** | `evasion` | Yes | Defender exclusions (applied to every path in `wash_copies[]` — the running exe, the install destination, and all persistence drops) |
+| **Installation** | `installation` | No | Copy loader to a stable directory before persistence registers it |
+| **Persistence** | `persistence` | No | None, HKCU Run Key, User Startup Folder, Scheduled Task, HKLM Run Key, Logon Script, All-Users Startup, Scheduled Task as SYSTEM, Winlogon Userinit, WMI Event Subscription |
+| **Evasion** | `evasion` | Yes | Defender exclusions applied to every tracked payload path |
 | **Process Injection** | `psinjection` | No | NtCreateSection + NtMapViewOfSection, VirtualAllocEx + CreateRemoteThread, QueueUserAPC |
 | **Shellcode Execution** | `shellcodeexecution` | No | VirtualAlloc RW→RX, HeapAlloc, CreateThread, NtCreateThreadEx, fiber, callback, threadpool, syscall |
-| **Generic Payload** | `genericshellcode` | No | Built-in calc.exe and MessageBox shellcodes for testing (used as shellcode source, not a template placeholder) |
 
 ## Installation techniques
 
-The `installation` section is single-select and executed **before** persistence and evasion so that those sections always operate on the stable installed path (see [Template Engine](/internals/template-engine) for the full coordination model).
+The `installation` section runs **before** persistence and evasion, ensuring those sections always operate on the stable installed path.
 
 | ID | Location | Admin required | Text inputs |
 |---|---|---|---|
 | `None` | Run in-place (default) | No | — |
 | `AppDataDir` | `%APPDATA%\<subdir>\<file>` | No | Sub-directory, installed filename |
 | `LocalAppDataDir` | `%LOCALAPPDATA%\<subdir>\<file>` | No | Sub-directory, installed filename |
-| `ProgramDataDir` | `%ProgramData%\<subdir>\<file>` | Yes (`requires: [uac_bypass]`) | Sub-directory, installed filename |
-
-All non-`None` items: create the directory → `CopyFileW` → set `wash_install_path` → track with `wash_track()` → relaunch from the new path → `ExitProcess(0)`. If already running from the install destination the copy + relaunch branch is skipped to prevent infinite relaunch loops.
+| `ProgramDataDir` | `%ProgramData%\<subdir>\<file>` | Yes (requires UAC bypass) | Sub-directory, installed filename |
 
 ## Persistence techniques
 
-The `persistence` section is single-select (one technique per build) and present in every template. Techniques are split by privilege level.
+The `persistence` section is single-select. Techniques are grouped by privilege level.
 
 ### User-level (no admin required)
 
-| ID | Display | Trigger | Registry / FS location |
-|---|---|---|---|
-| `HkcuRunKey` | HKCU Run Key | Every user logon | `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` |
-| `StartupFolder` | User Startup Folder | Every user logon | `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\` |
-| `ScheduledTask` | Scheduled Task (user) | Every user logon (`/SC ONLOGON /RL LIMITED`) | Task Scheduler — current user |
-| `LogonScript` | Logon Script (MPR) | Every interactive logon via winlogon.exe | `HKCU\Environment\UserInitMprLogonScript` + `%APPDATA%\Microsoft\Windows\` |
+| ID | Trigger | Location |
+|---|---|---|
+| `HkcuRunKey` | Every user logon | `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` |
+| `StartupFolder` | Every user logon | `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\` |
+| `ScheduledTask` | Every user logon | Task Scheduler — current user |
+| `LogonScript` | Every interactive logon | `HKCU\Environment\UserInitMprLogonScript` |
 
 ### Admin-level (requires UAC bypass)
 
-| ID | Display | Trigger | Registry / FS location |
-|---|---|---|---|
-| `HklmRunKey` | HKLM Run Key | Every logon, all users | `HKLM\Software\Microsoft\Windows\CurrentVersion\Run` |
-| `AllUsersStartup` | All-Users Startup Folder | Every logon, all users | `%ProgramData%\Microsoft\Windows\Start Menu\Programs\Startup\` |
-| `SchtasksSystem` | Scheduled Task as SYSTEM | Every boot, before any user session | Task Scheduler — SYSTEM account (`/SC ONSTART /RU SYSTEM /RL HIGHEST`) |
-| `WinlogonUserinit` | Winlogon Userinit Hijack | Every interactive logon | `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit` |
-| `WmiEventSubscription` | WMI Permanent Event Subscription | Every interactive logon (Win32_LogonSession type 2) | WMI `root\subscription` namespace — invisible to registry and Task Scheduler |
+| ID | Trigger | Location |
+|---|---|---|
+| `HklmRunKey` | Every logon, all users | `HKLM\Software\Microsoft\Windows\CurrentVersion\Run` |
+| `AllUsersStartup` | Every logon, all users | `%ProgramData%\Microsoft\Windows\Start Menu\Programs\Startup\` |
+| `SchtasksSystem` | Every boot, before any user session | Task Scheduler — SYSTEM account |
+| `WinlogonUserinit` | Every interactive logon | `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit` |
+| `WmiEventSubscription` | Every interactive logon | WMI `root\subscription` — invisible to registry and Task Scheduler |
 
 ::: tip Pairing with UAC bypass
-All admin-level persistence items declare `requires: [uac_bypass]`. The generator enforces this at code-gen time — selecting one without a UAC bypass snippet in the same build is rejected. Use `-Snippet uacb=FodHelper` or `-Snippet uacb=ComputerDefaults` to satisfy the constraint.
-:::
-
-::: details WMI subscription internals
-`WmiEventSubscription` avoids COM ceremony in C++ by writing a UTF-16LE PowerShell script to `%TEMP%\wusa_svc.ps1`, executing it via `powershell.exe -ExecutionPolicy Bypass -File`, then deleting the file. The PS script creates three WMI objects in `root\subscription`:
-
-1. `__EventFilter` — WQL query: `SELECT * FROM __InstanceCreationEvent WITHIN 30 WHERE TargetInstance ISA 'Win32_LogonSession' AND TargetInstance.LogonType=2`
-2. `CommandLineEventConsumer` — runs the payload exe when the event fires
-3. `__FilterToConsumerBinding` — links filter to consumer
-
-Entries live in the WMI repository (CIM database), not in the registry or Task Scheduler, making them invisible to most AV/EDR persistence checkers.
+All admin-level persistence items require a UAC bypass snippet in the same build. Use `-Snippet uacb=FodHelper` or `-Snippet uacb=ComputerDefaults` to satisfy the constraint.
 :::
 
 ## Template definitions
 
-| Template | Description | Snippet placeholders | Special behavior |
-|---|---|---|---|
-| **default** | Full-featured loader | 11 | All sections: anti-emulation, guardrails, sandbox, anti-debug, decoy, UAC bypass, **installation**, persistence, evasion, injection, execution |
-| **paranoid** | Defense-in-depth | 10 + watchdog | Monitoring thread polling debuggers every 500ms; includes anti-analysis, installation |
-| **aggressive** | Active countermeasures | 8 + monitor | Terminates debuggers and analysis tools; includes anti-analysis, installation |
-| **stealth** | Maximum evasion | 9 | Sequential defense: anti-emulation → sandbox → guardrails → anti-debug → UAC → **installation** → persistence → evasion → execution |
-| **minimal** | Bare-bones loader | 4 | `SHELLCODE_SOURCE` + `INSTALLATION` + `PERSISTENCE` + `SHELLCODE_EXECUTION`; no evasion layers |
-| **minimal-dll** | DLL entry point | 4 | `DllMain` → `DLL_PROCESS_ATTACH` → `ExecutePayload()` with installation + persistence + execution |
-| **sgncarrier** | SGN-encoded payload carrier | 4 | Wraps a Shikata Ga Nai-encoded `.bin`; execution snippet must allocate RWX for the self-modifying decoder stub |
+| Template | Description | Notes |
+|---|---|---|
+| **default** | Full-featured loader | All sections active |
+| **paranoid** | Defense-in-depth | Adds a monitoring thread polling for debuggers every 500 ms |
+| **aggressive** | Active countermeasures | Terminates debuggers and analysis tools |
+| **stealth** | Maximum evasion | Sequential six-layer defense |
+| **minimal** | Bare-bones loader | Shellcode source + installation + persistence + execution only |
+| **minimal-dll** | DLL entry point | `DllMain` → `DLL_PROCESS_ATTACH` |
+| **sgncarrier** | SGN payload carrier | Requires RWX allocation for the Shikata Ga Nai decoder stub |

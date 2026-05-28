@@ -14,7 +14,7 @@ The renamer walks the assembled C++ source and substitutes a whitelist of **inte
 | **Encoder keys** | Any identifier ending in `_key`, `_nonce`, `_iv`, `_salt`, `_round` (matching length companion `_len` follows) | Yes |
 | **Loop counters / local vars** | `i`, `j`, `S[…]`, etc. | No (kept stable to keep the source readable) |
 
-Public stability is a hard guarantee: Washmachine's `CompilerService` and any third-party consumer can keep assuming the `code_blob` / `code_blob_len` symbols at file scope.
+Public stability is a hard guarantee: Washmachine and any third-party consumer can keep assuming the `code_blob` / `code_blob_len` symbols at file scope.
 
 ## CLI
 

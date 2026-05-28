@@ -105,26 +105,4 @@ python main.py -e 10 -v 2 --seed 0xDEADBEEF payload.bin -o loader.cpp
 
 Pin the polymorphism RNG so a given seed always produces the same identifiers and the same encoder keys.
 
-## Catalog format
-
-Encoders live in `data/yaml/algos.yaml`:
-
-```yaml
-- index: 10
-  name: chacha20
-  desc: ChaCha20 stream cipher with per-build random 256-bit key + 96-bit nonce
-  keys_snippet: |
-    def gen_keys():
-        import os
-        return {"chacha_key": os.urandom(32), "chacha_nonce": os.urandom(12)}
-  python_snippet: |
-    def encode(data: bytes, keys: dict) -> bytes:
-        # … ChaCha20 implementation, returns ciphertext bytes
-  cpp_inverse: |
-    // ChaCha20 stream cipher (RFC 8439) — symmetric: same code decodes
-    // (full C++ implementation here, references chacha_key / chacha_nonce)
-```
-
-The catalog validator enforces: unique `index`, unique `name`, non-empty `python_snippet`, non-empty `cpp_inverse`. `keys_snippet` is optional — when present, its `gen_keys()` is called per build and the returned `{name: bytes}` dict becomes `unsigned char` arrays at file scope.
-
-See [Washmachine Integration](/bin2shell/integration) for how `CompilerService` consumes this output.
+See [Washmachine Integration](/bin2shell/integration) for how Bin2Shell output is consumed during the compile pipeline.

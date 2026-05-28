@@ -26,7 +26,7 @@ The LLVM obfuscation backend is the only feature that requires LLVM 20+. Everyth
 
 **Symptom:** `MSVC cl.exe` row reads `Visual Studio Build Tools (cl.exe) not detected`.
 
-**Cause:** `CompilerToolLocator` searched the VS installer, `VCToolsInstallDir`, and PATH but found nothing.
+**Cause:** Washmachine searched the VS installer, `VCToolsInstallDir`, and PATH but found nothing.
 
 **Solution:** Install [vs_BuildTools.exe](https://aka.ms/vs/17/release/vs_BuildTools.exe) with the **Desktop development with C++** workload. Then re-run `doctor`.
 

@@ -52,12 +52,12 @@ Same as the CLI, plus:
 
 ### LLVM version policy
 
-`ToolPreflightService` enforces a minimum LLVM major because the bundled obfuscation passes use new pass-manager APIs:
+Washmachine enforces a minimum LLVM major because the bundled obfuscation passes use new pass-manager APIs:
 
-| Constant | Value | Why |
+| Requirement | Value | Why |
 |---|---|---|
-| `RequiredLlvmMajor` | **20** | `registerOptimizerEarlyEPCallback` w/ `ThinOrFullLTOPhase` (LLVM 16+), `getFirstNonPHIIt()` returning `BasicBlock::iterator` (LLVM 20+) |
-| `RecommendedLlvmMajor` | **22** | Full obfuscation-pass API surface |
+| **Required minimum** | **20** | Bundled passes use new pass-manager APIs introduced in LLVM 16–20 |
+| **Recommended** | **22** | Full obfuscation-pass API surface |
 
 If you're below 20, `doctor` flags `INCOMPATIBLE` and the LLVM obfuscation backend is disabled. Other commands still work — see [LLVM Obfuscation Backend](/internals/llvm-backend) for full details.
 

@@ -56,21 +56,6 @@ Run `backdoor` with no arguments to drop into an interactive session that walks 
 | `silence` | Host runs normally; the implant fires silently only when the binary is launched with arguments. Useful when the target needs to remain functionally identical. |
 | `dropper` | The host drops and runs a separate implant `.exe` from an embedded `.dpl` section on first launch. Requires `--implant <file>` — that file is XOR-encrypted and appended to the host. |
 
-## Processing stages
-
-1. Validate inputs and parse injection parameters.
-2. Analyze target PE: architecture, sections, entry point, code caves.
-3. Read shellcode bytes and compute SHA-256.
-4. Run pre-flight checks: .NET assembly, packing, entry point validity, signature presence, cave space.
-5. *(If `--dry-run`)* Report analysis and exit.
-6. Optionally strip digital signature.
-7. Write shellcode payload to selected location.
-8. Generate register-safe carrier code (push/pop all registers, call shellcode, restore, jump to original EP).
-9. Patch exit calls in shellcode (`ExitProcess` → `ExitThread`).
-10. Optionally patch subsystem to GUI (suppress console window).
-11. Recalculate PE checksum.
-12. Write backdoored PE to output path.
-
 ## JSON output schema
 
 ```json

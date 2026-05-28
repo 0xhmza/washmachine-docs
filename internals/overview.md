@@ -1,94 +1,122 @@
-# Architecture Overview
+# How It Works
 
-Washmachine is a three-project .NET 8 solution where a shared core library provides all business logic, consumed by both a CLI console application and a WinUI 3 desktop client.
+Washmachine turns raw shellcode into a compiled Windows executable by combining a YAML playbook, an optional encoding pipeline, and a C++ compiler. This page walks through the main concepts so you can make informed decisions when building loaders.
 
-## Solution Layout
+## The generation pipeline
 
-```text
-washmachine.sln
-├── Washmachine.Core       net8.0 class library — headless business logic
-├── Washmachine.Cli        net8.0 console app   — terminal interface
-└── washmachine            net8.0-windows10.0   — WinUI 3 desktop app
-```
-
-## Dependency Graph
+Every `encode` run follows the same sequence:
 
 ```text
-washmachine (WinUI 3 GUI) ──→ Washmachine.Core
-Washmachine.Cli           ──→ Washmachine.Core
+Shellcode source (file / hex / URL)
+        │
+        ▼
+Encoding (optional)
+  Bin2Shell: encoder + envelope + carrier
+  SGN: Shikata Ga Nai pre-pass
+        │
+        ▼
+Template rendering
+  Load template from playbook
+  Resolve snippet selections
+  Substitute {{PLACEHOLDER}} tokens
+        │
+        ▼
+Compilation
+  Auto-discovered C++ compiler (MSVC / GCC / Clang)
+  Optional: clang-cl + LLVM obfuscation passes
+        │
+        ▼
+Output binary  (YYYYMMDD_HHMMSS-<hash>.exe)
 ```
 
-`Washmachine.Cli` and `washmachine` are sibling entry points. Neither depends on the other; both depend exclusively on `Washmachine.Core`.
+See [Templates & Snippets](/internals/template-engine) for a detailed walkthrough of template rendering, and [Compilation Flow](/internals/compile-pipeline) for what happens during the compile step.
 
-## Key Services
+## The playbook
 
-| Service | Responsibility |
+All loader behaviour is defined in `Assets/default.yaml`. The playbook declares:
+
+- **Templates** — C++ skeleton files with `{{PLACEHOLDER}}` tokens at each injection point
+- **Snippet sections** — categorized C++ code fragments that fill those placeholders
+- **Inputs** — configurable parameters (target process name, install directory, guardrail conditions)
+
+Changing a technique means editing the YAML. No recompilation required.
+
+You can drop additional `.yaml` files into `Assets/` and switch between them from the GUI Settings page or the CLI. See [Playbook Reference](/internals/yaml-catalog) for the full format.
+
+## Snippet sections
+
+| Section | Key | Purpose |
+|---|---|---|
+| Anti Emulation | `antiemulation` | Stall or confuse AV emulators before payload runs |
+| Anti Analysis | `antianalysis` | Detect and terminate analysis tools |
+| Anti Debugging | `antidebugging` | Detect active debuggers |
+| Anti Sandbox/VM | `antisandbox` | Detect virtual environments |
+| Guardrails | `guardrail` | Environment checks — domain, date, file existence |
+| Decoy | `decoy` | Distraction actions (open Notepad, show a dialog) |
+| UAC Bypass | `uacb` | Re-launch elevated without a UAC prompt |
+| Installation | `installation` | Copy loader to a stable directory before persistence |
+| Persistence | `persistence` | Register the loader with the OS for re-execution |
+| Evasion | `evasion` | Defender exclusions applied to every tracked path |
+| Process Injection | `psinjection` | Inject shellcode into a remote process |
+| Shellcode Execution | `shellcodeexecution` | Execute shellcode in the current process |
+
+Most sections are multi-select; UAC bypass, installation, persistence, and process injection are single-select.
+
+## Templates
+
+Seven built-in templates are available out of the box. Each template controls which snippet sections are active and in what order:
+
+| Template | Description |
 |---|---|
-| `CompilerService` | Full compile pipeline orchestration — plan → render → compile |
-| `PeBackdoorService` | PE injection with carrier stubs — 5 methods, 3 modes (normal / silence / dropper) |
-| `PeAnalyzerService` | Deep PE analysis and security scoring |
-| `PeStripService` | Binary extraction from PE files (incl. managed-PE detection) |
-| `PePostCompileService` | Post-build resource clone + NOP padding |
-| `CompilerToolLocator` | C++ toolchain discovery (MSVC / clang / g++ / vswhere) |
-| `RequirementProvisioner` | External tool download + install (Bin2Shell, SGN, Donut) |
-| `CppFileConverter` | Compiler invocation and output naming |
-| `LlvmPipelineService` | clang-cl + LLVM pass plugin orchestration |
-| `LlvmPassRegistry` | Discovers built `pass.dll` files under `Assets/llvm-passes/` |
-| `PlaybookService` | Playbook (YAML catalog) parsing + validation |
-| `TemplateScannerService` | Static analysis of playbook for invariant violations |
-| `ToolPreflightService` | `doctor` preflight — LLVM/clang/MSVC/Bin2Shell + LLVM version check |
-| `Bin2ShellRunner` | Bin2Shell process wrapper |
-| `Bin2ShellWebOutputParser` | Bin2Shell web-bundle YAML parser |
-| `ShellcodeEncodingCatalogService` | Dynamic encoder/envelope catalog |
-| `DonutService` | .NET assembly → PIC shellcode via bundled `donut.exe` |
-| `AppPaths` | Centralized path resolution (Assets, Tools, runtime headers) |
-| `AppSettings` | Persisted JSON settings |
+| `minimal` | Shellcode source + installation + persistence + execution — no evasion layers |
+| `minimal-dll` | Same as minimal, but with a `DllMain` entry point |
+| `default` | All sections: full evasion, UAC bypass, installation, persistence |
+| `paranoid` | Defense-in-depth with a continuous watchdog thread polling for debuggers |
+| `aggressive` | Actively terminates analysis tools and debuggers |
+| `stealth` | Six-layer sequential defense with delayed execution |
+| `sgncarrier` | Designed for Shikata Ga Nai pre-encoded payloads (requires RWX allocation) |
 
-::: tip Renamed in the ship-prep
-`YamlCodeSnippetCatalogService` was renamed to **`PlaybookService`** (and `ICodeSnippetCatalogService` → `IPlaybookService`) for naming consistency with the user-facing "playbook" terminology. The interface and behaviour are otherwise unchanged.
-:::
+## Encoding
 
-## Desktop Application
+Encoding is an optional layer handled by [Bin2Shell](/bin2shell/overview). When enabled, raw shellcode bytes are transformed before being embedded in the loader source:
 
-The WinUI 3 desktop application provides an interactive interface:
+```text
+raw shellcode  →  encoder  →  envelope  →  loader source
+                   (e.g. ChaCha20)   (e.g. Base64)
+```
+
+Alternatively, the encoded payload can be written to a carrier file (PNG, BMP, ICO, INI) that the loader reads from disk at runtime.
+
+## Interfaces
+
+Both interfaces — CLI and desktop — produce identical output because they share the same compilation engine.
+
+### `washmachine-cli`
+
+A command-line tool with two execution modes:
+
+- **One-shot:** pass all arguments on the command line and exit immediately
+- **Interactive REPL:** run without arguments to enter a persistent shell with tab completion, command history, and Metasploit-style sub-shells per command
+
+### `washmachine` (desktop app)
+
+A WinUI 3 application with page-based navigation:
 
 | Page | Purpose |
 |---|---|
-| **StartupWindow** | First-run / launch preflight — provisioning → compiler discovery → `ToolPreflightService` (the same three steps the CLI REPL runs). Surfaces a "missing / incompatible" warning row when LLVM/clang/Bin2Shell aren't ready. |
-| **MainPage** | Shellcode source selection (file, hex, URL). When a `.exe` is selected the page auto-detects whether it is a managed (.NET) assembly and reveals either the donut options panel or the PE strip options panel accordingly. |
-| **CompilePage** | Template selection, snippet configuration, compilation. `.exe` shellcode sources are transparently routed through `DonutService` (managed) or the CLI `strip` command (native shellcode-format PEs) before encoding. The Compilation Backend combo selects between MSVC and the LLVM obfuscation backend. |
-| **PackingPage** | Output binary packing options |
-| **BackdooringPage** | PE modification across 5 injection methods with 3 modes |
-| **SettingsPage** | Application preferences |
+| **Main** | Shellcode source selection — file, hex string, or URL. Auto-detects .NET assemblies and shows conversion options |
+| **Compile** | Template selection, snippet configuration, and compilation. Supports both MSVC and the LLVM obfuscation backend |
+| **Backdoor** | PE injection with all 5 methods and 3 execution modes |
+| **Settings** | Application preferences and session logging configuration |
 
-Additional windows: `WebPayloadWizardWindow`, `CompilerDetectionWindow`, `RequirementsProgressWindow`.
+## Output locations
 
-The application uses Mica backdrop (Windows 11) and renders at 980×720 with a minimum width of 700px. The `StartupWindow` is 560×380.
+After a successful build:
 
-## End-to-end pipeline
+| Path | Contents |
+|---|---|
+| `temp/cpp/Compiled Binaries/` | Output `.exe` / `.dll`, named `YYYYMMDD_HHMMSS-<hash>.exe` |
+| `logging/session_<timestamp>/source.cpp` | Rendered C++ source before compilation |
+| `logging/session_<timestamp>/build_log.txt` | Full compiler output (stdout + stderr) |
 
-```text
-                    ┌─────────────────────────────────────────┐
-                    │            Shellcode source              │
-                    │   file / hex / URL / managed PE          │
-                    └────────────────────┬────────────────────┘
-                                         ▼
-        ┌──────────────────────────────────────────────────────────┐
-        │                  CompilerService.CompileAsync             │
-        │                                                            │
-        │   PlaybookService            ← template + snippets         │
-        │   SGN (optional)             ← Shikata Ga Nai pre-pass     │
-        │   Bin2ShellRunner            ← encoder + envelope + carrier│
-        │   CppCompilationPlan         ← assembled render state      │
-        │   RenderTemplate             ← substitute {{TOKEN}}        │
-        │   CompilerToolLocator        ← cl / clang++ / g++          │
-        │   LlvmPipelineService (opt)  ← clang-cl + pass plugins     │
-        │   CppFileConverter           ← compile + link              │
-        │   PePostCompileService (opt) ← clone donor PE resources    │
-        └──────────────────────────────────────────────────────────┘
-                                         │
-                                         ▼
-                          <timestamp>-<sha256>.exe
-```
-
-See [Compile Pipeline](/internals/compile-pipeline) for the step-by-step walkthrough and [LLVM Obfuscation Backend](/internals/llvm-backend) for the optional clang-cl path.
+See [Output & Artifacts](/guide/output) for details on all artifact paths and settings.

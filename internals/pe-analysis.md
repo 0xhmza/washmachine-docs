@@ -1,6 +1,6 @@
 # PE Analysis
 
-`PeAnalyzerService` (~1,130 lines) performs deep PE inspection returning a comprehensive analysis result.
+The `analyze` command performs deep PE inspection and returns a comprehensive report covering the sections below.
 
 ## Analysis scope
 

@@ -212,21 +212,6 @@ washmachine-cli encode -Shellcode payload.bin -Sgn -SgnCount 3 -Encoder 1
 washmachine-cli encode -Shellcode payload.bin -Json
 ```
 
-## Processing stages
-
-1. Parse and validate the shellcode source and options.
-2. Provision Bin2Shell if encoding/envelope options are set and Bin2Shell is missing.
-3. Load the YAML catalog and resolve the selected template.
-4. Build a `CppCompilationPlan` — map snippet selections to template placeholders.
-5. Apply Bin2Shell encoding/envelope transforms if requested.
-6. Render the C++ source by substituting `{{PLACEHOLDER}}` tokens with resolved snippets.
-7. Discover an available compiler (MSVC → GCC → Clang).
-8. Invoke the compiler with optimized flags and link required libraries.
-9. Name the output binary `YYYYMMDD_HHMMSS-<sha256prefix>.exe`.
-10. Write session artifacts (source, build log) to `logging/session_<id>/`.
-
-See [Template Engine](/internals/template-engine) for a detailed walkthrough of steps 3–6.
-
 ## JSON output schema
 
 ```json

@@ -11,7 +11,7 @@ Each pass is a hot-loadable `pass.dll` built against the system LLVM install. Th
 
 ## Toolchain selection
 
-`LlvmPipelineService` picks a compiler at runtime:
+Washmachine selects a compiler at runtime:
 
 1. **MSVC discoverable?** Use `clang-cl.exe` + the MSVC sysroot via `vcvars*.bat`. No MinGW dependency.
 2. **MSVC not found?** Fall back to `clang++.exe -target x86_64-w64-mingw32` (requires MinGW headers in PATH or `Tools\mingw\`).
@@ -20,10 +20,10 @@ Both paths consume the same `pass.dll` plugins via `-fpass-plugin=<path>`.
 
 ## Version requirements
 
-| Constant (`ToolPreflightService`) | Value | Why this minimum |
+| Requirement | Value | Why |
 |---|---|---|
-| `RequiredLlvmMajor` | **20** | Bundled passes use `registerOptimizerEarlyEPCallback` with `ThinOrFullLTOPhase` (LLVM 16+) and `getFirstNonPHIIt()` returning `BasicBlock::iterator` (LLVM 20+) |
-| `RecommendedLlvmMajor` | **22** | Full obfuscation-pass API surface; matches the version the bundled `Tools\LLVM\bin\` ships when you build the MSI |
+| **Required minimum** | **20** | Bundled passes use new pass-manager APIs introduced in LLVM 16–20 |
+| **Recommended** | **22** | Full obfuscation-pass API surface; matches the version bundled in the MSI |
 
 `washmachine-cli doctor` parses `clang++ --version` and flags mismatches:
 
@@ -50,7 +50,7 @@ Assets/llvm-passes/
 └── string-obfuscation/              # …same layout
 ```
 
-`LlvmPassRegistry` scans `Assets/llvm-passes/*/` at startup and exposes any directory containing a built `pass.dll` to the `encode` command.
+Any directory under `Assets/llvm-passes/` that contains a built `pass.dll` is automatically picked up and exposed to the `encode` command.
 
 ## Building the passes
 
@@ -66,25 +66,6 @@ Assets/llvm-passes/
 
 The script also patches the `diaguids.lib` path in `LLVMExports.cmake` if the bundled absolute path is stale — necessary because the official LLVM release bakes the build machine's `Microsoft Visual Studio\<edition>\…` path into the export file.
 
-## Module-pass requirement
-
-Bundled passes are **module passes**, not function passes. This is intentional: under MSVC static linkage, `AnalysisInfoMixin<>::ID()` template instantiations don't share addresses between the host clang and the plugin DLL, so the standard `createModuleToFunctionPassAdaptor` lookup fails. Direct module-level iteration sidesteps the FAM-proxy lookup entirely:
-
-```cpp
-struct BogusControlFlowModulePass : PassInfoMixin<BogusControlFlowModulePass> {
-    PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
-        FunctionAnalysisManager dummyFAM;
-        BogusControlFlowPass impl;
-        for (Function &F : M)
-            impl.run(F, dummyFAM);
-        return PreservedAnalyses::none();
-    }
-    static bool isRequired() { return true; }
-};
-```
-
-Any new pass you write for Washmachine must follow the same module-pass + direct-loop pattern.
-
 ## Bundled LLVM in the installer
 
 The MSI installer (`publish.ps1 -Installer`) bundles `Tools\LLVM\` next to the executable so end-users don't need to install LLVM separately. The bundle includes:
@@ -99,12 +80,3 @@ Tools\LLVM\bin\
 
 …plus the built `pass.dll` files under `Assets\llvm-passes\*/`. MSVC is **not** bundled (see [Build & Installer](/internals/build) for why).
 
-## Implementation reference
-
-| File | Role |
-|---|---|
-| `Washmachine.Core/Services/LlvmPipelineService.cs` | Toolchain selection, clang-cl/clang++ invocation, pass plugin wiring |
-| `Washmachine.Core/Services/LlvmPassRegistry.cs` | Discovers built `pass.dll` files at startup |
-| `Washmachine.Core/Services/ToolPreflightService.cs` | Parses `clang++ --version`, enforces `RequiredLlvmMajor` |
-| `Assets/llvm-passes/build-all.ps1` | Local pass-plugin builder |
-| `installer/Washmachine.wxs` | MSI manifest that bundles `Tools\LLVM\` |

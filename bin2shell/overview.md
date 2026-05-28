@@ -19,27 +19,9 @@ Washmachine consumes Bin2Shell output during compilation when `--encoder`, `--en
 ## Project reference
 
 - **Upstream:** [Bin2Shell on GitHub](https://github.com/0xhmza/bin2shell)
-- **Role inside Washmachine:** invoked by `CompilerService` via `Bin2ShellRunner` when encoding/envelope/carrier options are set
+- **Role inside Washmachine:** invoked during compilation when encoding/envelope/carrier options are set
 - **Runtime:** Python 3.10+
 - **Provisioning:** `washmachine-cli provision` installs Bin2Shell automatically; `washmachine-cli doctor` confirms the install
-
-## Source layout
-
-```text
-Tools/Bin2Shell/
-├── main.py                      Thin CLI entry
-├── bin2shell.exe                Optional WinForms GUI
-├── bin2shell/
-│   ├── cli.py                   Argument parsing, generation pipeline
-│   ├── catalog.py               YAML catalog loader (encoders, envelopes, web helpers)
-│   ├── carriers.py              External-file carriers (ini / png / bmp / ico)
-│   ├── polymorphism.py          Per-run symbol renamer + seed-based RNG
-│   ├── formatting.py            C array / string formatting utilities
-│   └── utils.py                 File I/O, terminal width
-├── data/yaml/
-│   └── algos.yaml               Encoder, envelope, web-helper definitions
-└── testing.py                   Matrix test harness (148 cases incl. carrier sweep)
-```
 
 ## Requirements
 
@@ -59,5 +41,5 @@ The WinForms GUI ships as `bin2shell.exe` (~175 KB single-file) and runs alongsi
 | [Encoders & Envelopes](/bin2shell/encoders) | Full catalog of the 11 encoders and 11 envelopes with parameters and example outputs |
 | [External Carriers](/bin2shell/carriers) | PNG / BMP / ICO / INI file spoofing — how the wrap and runtime unwrap work |
 | [Polymorphism](/bin2shell/polymorphism) | Per-run symbol renamer, `--seed`, and what stays stable in the public ABI |
-| [Washmachine Integration](/bin2shell/integration) | How `CompilerService` invokes Bin2Shell during the compile pipeline |
+| [Washmachine Integration](/bin2shell/integration) | How Washmachine invokes Bin2Shell during the compile pipeline |
 | [Web Mode & Security](/bin2shell/advanced) | Runtime HTTP fetch via WinHTTP / WinINet / URLMon, and the catalog trust model |

@@ -32,7 +32,7 @@ export default defineConfig({
       { text: 'Overview', link: '/' },
       { text: 'Guide', link: '/guide/setup' },
       { text: 'CLI', link: '/cli/overview' },
-      { text: 'Internals', link: '/internals/overview' },
+      { text: 'Concepts', link: '/internals/overview' },
       { text: 'Bin2Shell', link: '/bin2shell/overview' },
       { text: 'GitHub', link: 'https://github.com/0xhmza/washmachine' }
     ],
@@ -64,13 +64,13 @@ export default defineConfig({
         ]
       },
       {
-        text: 'Internals',
+        text: 'Concepts',
         items: [
-          { text: 'Architecture', link: '/internals/overview' },
-          { text: 'Template Engine', link: '/internals/template-engine' },
-          { text: 'Playbook (YAML Catalog)', link: '/internals/yaml-catalog' },
-          { text: 'Compile Pipeline', link: '/internals/compile-pipeline' },
-          { text: 'LLVM Obfuscation Backend', link: '/internals/llvm-backend' },
+          { text: 'How It Works', link: '/internals/overview' },
+          { text: 'Templates & Snippets', link: '/internals/template-engine' },
+          { text: 'Playbook Reference', link: '/internals/yaml-catalog' },
+          { text: 'Compilation Flow', link: '/internals/compile-pipeline' },
+          { text: 'LLVM Obfuscation', link: '/internals/llvm-backend' },
           { text: 'PE Analysis', link: '/internals/pe-analysis' },
           { text: 'PE Injection', link: '/internals/pe-injection' },
           { text: 'Build & Installer', link: '/internals/build' }
