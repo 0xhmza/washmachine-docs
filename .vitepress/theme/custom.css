@@ -120,6 +120,33 @@ body {
 
 
 /* ═══════════════════════════════════════════════════════
+   DIAGRAMS & PIPELINE IMAGERY
+   ═══════════════════════════════════════════════════════ */
+
+.vp-doc img[src$=".svg"],
+.VPHome .vp-doc img[src$=".svg"] {
+  width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 14px;
+  background: rgba(107, 163, 214, 0.04);
+  padding: 1.25rem;
+  border: 1px solid var(--lux-border);
+  box-shadow: var(--lux-shadow-md);
+  display: block;
+}
+
+.dark .vp-doc img[src$=".svg"] {
+  background: rgba(107, 163, 214, 0.025);
+}
+
+.vp-doc a:has(> img[src$=".svg"]) {
+  display: block;
+  border: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════
    NAVIGATION
    ═══════════════════════════════════════════════════════ */
 

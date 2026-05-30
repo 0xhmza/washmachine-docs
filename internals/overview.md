@@ -1,122 +1,164 @@
-# How It Works
+# How Washmachine works
 
-Washmachine turns raw shellcode into a compiled Windows executable by combining a YAML playbook, an optional encoding pipeline, and a C++ compiler. This page walks through the main concepts so you can make informed decisions when building loaders.
+Washmachine takes a raw `.bin` of shellcode and turns it into a hardened Windows executable. Between those two artifacts sits a six-stage pipeline you can dial in stage by stage — encoding, template rendering, compilation, and post-processing — all driven by a single YAML playbook.
 
-## The generation pipeline
+This page is the conceptual map. It explains *what each stage does* and *why it exists*, then points you at the deep-dives.
 
-Every `encode` run follows the same sequence:
+## The pipeline
 
-```text
-Shellcode source (file / hex / URL)
-        │
-        ▼
-Encoding (optional)
-  Bin2Shell: encoder + envelope + carrier
-  SGN: Shikata Ga Nai pre-pass
-        │
-        ▼
-Template rendering
-  Load template from playbook
-  Resolve snippet selections
-  Substitute {{PLACEHOLDER}} tokens
-        │
-        ▼
-Compilation
-  Auto-discovered C++ compiler (MSVC / GCC / Clang)
-  Optional: clang-cl + LLVM obfuscation passes
-        │
-        ▼
-Output binary  (YYYYMMDD_HHMMSS-<hash>.exe)
-```
+![Washmachine compilation pipeline — six stages from raw shellcode to a hardened executable](/pipeline.svg)
 
-See [Templates & Snippets](/internals/template-engine) for a detailed walkthrough of template rendering, and [Compilation Flow](/internals/compile-pipeline) for what happens during the compile step.
+Every `encode` run flows through the same six stages. Each stage is **optional except rendering and compilation** — you can run a minimal build with nothing but a template and a compiler, or stack the full chain for maximum diversification.
 
-## The playbook
+| # | Stage | What it does | Why it matters |
+|---|---|---|---|
+| 1 | **Source resolution** | Read shellcode from file, hex, or URL; auto-route managed PEs through Donut | One CLI surface, three input modes — including runtime HTTP fetch for staged payloads |
+| 2 | **Encoding** | Bin2Shell encoder + envelope + optional carrier or web bundle | Per-build random keys mean every artifact has fresh ciphertext, fresh keys, fresh symbol names |
+| 3 | **Template render** | Resolve the chosen template, substitute every `{{PLACEHOLDER}}` with selected snippets | Compose anti-debug, persistence, injection, and execution like Lego blocks |
+| 4 | **Compiler discovery** | Find MSVC, GCC, or Clang in a deterministic search order | No PATH wrestling — Washmachine finds the toolchain and reports what it chose |
+| 5 | **Compile & link** | Build with size-optimized flags; optionally route through clang-cl + LLVM IR pass plugins | LLVM backend adds bogus CFG, flattening, instruction substitution, string encryption at IR level |
+| 6 | **Post-process** | Hash-name the output, optionally clone PE metadata from a donor binary | Predictable artifacts, signed-looking metadata, full session logs for audit |
 
-All loader behaviour is defined in `Assets/default.yaml`. The playbook declares:
+→ Each stage is documented in detail in [Compilation Flow](/internals/compile-pipeline).
 
-- **Templates** — C++ skeleton files with `{{PLACEHOLDER}}` tokens at each injection point
-- **Snippet sections** — categorized C++ code fragments that fill those placeholders
-- **Inputs** — configurable parameters (target process name, install directory, guardrail conditions)
+## The four pillars
 
-Changing a technique means editing the YAML. No recompilation required.
+Washmachine is organized around four things that compose:
 
-You can drop additional `.yaml` files into `Assets/` and switch between them from the GUI Settings page or the CLI. See [Playbook Reference](/internals/yaml-catalog) for the full format.
+### 1. The playbook
 
-## Snippet sections
+A single YAML file — `Assets/default.yaml` — that declares **every** template, snippet, and configurable input the loader supports. Want a new persistence technique? Add a snippet. Want a new template layout? Drop one in. No recompilation, no plugin SDK, no rebuild of the host app.
 
-| Section | Key | Purpose |
-|---|---|---|
-| Anti Emulation | `antiemulation` | Stall or confuse AV emulators before payload runs |
-| Anti Analysis | `antianalysis` | Detect and terminate analysis tools |
-| Anti Debugging | `antidebugging` | Detect active debuggers |
-| Anti Sandbox/VM | `antisandbox` | Detect virtual environments |
-| Guardrails | `guardrail` | Environment checks — domain, date, file existence |
-| Decoy | `decoy` | Distraction actions (open Notepad, show a dialog) |
-| UAC Bypass | `uacb` | Re-launch elevated without a UAC prompt |
-| Installation | `installation` | Copy loader to a stable directory before persistence |
-| Persistence | `persistence` | Register the loader with the OS for re-execution |
-| Evasion | `evasion` | Defender exclusions applied to every tracked path |
-| Process Injection | `psinjection` | Inject shellcode into a remote process |
-| Shellcode Execution | `shellcodeexecution` | Execute shellcode in the current process |
+You can ship multiple playbooks side by side and switch between them from the GUI Settings page or the CLI. The schema lives at `Assets/playbook.schema.json` for IDE autocomplete.
 
-Most sections are multi-select; UAC bypass, installation, persistence, and process injection are single-select.
+→ [Playbook reference](/internals/yaml-catalog) · [Templates & snippets](/internals/template-engine)
 
-## Templates
+### 2. The snippet sections
 
-Seven built-in templates are available out of the box. Each template controls which snippet sections are active and in what order:
+Twelve sections, each mapping to one `{{PLACEHOLDER}}` token in the template. Most are multi-select — pick all the anti-debug techniques you want and they all get inlined.
 
-| Template | Description |
+| Section | What it does |
 |---|---|
-| `minimal` | Shellcode source + installation + persistence + execution — no evasion layers |
-| `minimal-dll` | Same as minimal, but with a `DllMain` entry point |
-| `default` | All sections: full evasion, UAC bypass, installation, persistence |
+| **Anti Emulation** | Stall or confuse AV emulators before payload runs |
+| **Anti Analysis** | Detect and terminate analysis tools, unhook NTDLL |
+| **Anti Debugging** | Detect active debuggers via PEB, NtGlobalFlag, timing, hardware breakpoints |
+| **Anti Sandbox/VM** | Detect virtual environments via CPUID, MAC prefixes, registry, processes |
+| **Guardrails** | Environment checks — domain, date, env vars, file existence |
+| **Decoy** | Distraction actions (open Notepad, show a dialog) |
+| **UAC Bypass** | Re-launch elevated without a UAC prompt |
+| **Installation** | Copy loader to a stable directory **before** persistence registers it |
+| **Persistence** | Register the loader with the OS for re-execution |
+| **Evasion** | Defender exclusions applied to every tracked path |
+| **Process Injection** | Inject shellcode into a remote process |
+| **Shellcode Execution** | Execute shellcode in the current process |
+
+The ordering inside the template is intentional — installation runs **before** persistence so Run keys point at the stable path, evasion runs **before** execution so exclusions are in place before the shellcode hits memory.
+
+### 3. The templates
+
+Seven templates ship out of the box. Each one declares which snippet sections are active and in what order — pick the right template for the threat model:
+
+| Template | Designed for |
+|---|---|
+| `minimal` | Bare-bones loader — shellcode source + installation + persistence + execution, no evasion |
+| `minimal-dll` | Same as `minimal` but with a `DllMain` entry point |
+| `default` | Full-featured — every section active, balanced for general use |
 | `paranoid` | Defense-in-depth with a continuous watchdog thread polling for debuggers |
 | `aggressive` | Actively terminates analysis tools and debuggers |
 | `stealth` | Six-layer sequential defense with delayed execution |
-| `sgncarrier` | Designed for Shikata Ga Nai pre-encoded payloads (requires RWX allocation) |
+| `sgncarrier` | Shikata Ga Nai carrier with RWX allocation |
 
-## Encoding
+### 4. The compilers
 
-Encoding is an optional layer handled by [Bin2Shell](/bin2shell/overview). When enabled, raw shellcode bytes are transformed before being embedded in the loader source:
+Washmachine auto-discovers a compiler at build time and picks the right one for the job:
 
-```text
-raw shellcode  →  encoder  →  envelope  →  loader source
-                   (e.g. ChaCha20)   (e.g. Base64)
+```
+Tools/  →  Visual Studio (2017–2022)  →  env vars  →  PATH
 ```
 
-Alternatively, the encoded payload can be written to a carrier file (PNG, BMP, ICO, INI) that the loader reads from disk at runtime.
+You see what it found with `washmachine-cli show compilers`. For the LLVM backend, set `--backend llvm` and Washmachine routes the build through `clang-cl` (using the MSVC sysroot) with pass plugins loaded via `-fpass-plugin`.
 
-## Interfaces
+## Features that make a difference
 
-Both interfaces — CLI and desktop — produce identical output because they share the same compilation engine.
+### Bin2Shell — encoding that doesn't look like encoding
+
+The encoding stage is a complete pipeline of its own: **encoder → envelope → (carrier | embed | web bundle)**. Every modern encoder mints fresh random keys per build, and the polymorphism pass renames every internal identifier — so two runs of the same command produce different-looking source files.
+
+Carriers go further: the encoded payload lives in a *valid* PNG, BMP, ICO, or INI file that the loader opens at runtime. The image opens correctly in any viewer; the INI parses cleanly. The payload hides in plain sight.
+
+→ [Bin2Shell overview](/bin2shell/overview) · [Encoders & envelopes](/bin2shell/encoders) · [External carriers](/bin2shell/carriers) · [Polymorphism](/bin2shell/polymorphism)
+
+### LLVM obfuscation — defense at the IR layer
+
+When you flip `--backend llvm`, Washmachine routes compilation through `clang-cl` with four IR-level pass plugins:
+
+- **Bogus control flow** — every safe basic block gets a junk twin guarded by an opaque-true predicate
+- **Control-flow flattening** — restructures the CFG into a single `while(switch)` dispatch loop
+- **Instruction substitution** — replaces arithmetic with mathematically equivalent expressions
+- **String obfuscation** — encrypts string literals; the decryptor runs on first use
+
+These run **after** every Bin2Shell transformation, so static signatures that survived the source layer have to also survive a transformed IR. The bundled MSI ships LLVM 22 — `doctor` verifies the version on every run.
+
+→ [LLVM obfuscation backend](/internals/llvm-backend)
+
+### PE analysis & injection — surgical, not blind
+
+The `analyze` command produces a structured report covering everything the IAT, sections, code caves, TLS callbacks, and security flags can tell you about a binary — including a composite 0–100 security score and a per-method injection feasibility assessment.
+
+The `backdoor` command then injects with awareness of what `analyze` found: five methods (code-cave, new-section, section-extension, text-pad, TLS callback) × three execution modes (normal, silence, dropper). Register-safe carrier stubs preserve flags, shadow space, and the original entry-point flow so the host stays functional.
+
+→ [PE analysis](/internals/pe-analysis) · [PE injection](/internals/pe-injection)
+
+### Polymorphism — every build is unique
+
+The Bin2Shell polymorphism layer rewrites every internal identifier in the generated source to fresh `_b…` / `_k…` names. Combined with random-key encoders, the result is that two builds of the same exact CLI command produce different ciphertexts, different keys, *and* different symbol names.
+
+Need a reproducible build for a golden snapshot? `--seed 0xCAFE` pins the RNG and gives you byte-identical output every time.
+
+→ [Polymorphism](/bin2shell/polymorphism)
+
+## Two front-ends, one engine
+
+Both `washmachine-cli` and `washmachine` produce **identical** binaries because they share the same C++ core, the same playbook loader, and the same compilation pipeline. Pick the interface that fits your workflow.
 
 ### `washmachine-cli`
 
-A command-line tool with two execution modes:
+- **One-shot mode** — pass every option on the command line, get a build, exit
+- **Interactive REPL** — tab completion, command history, Metasploit-style sub-shells per command
+- **JSON output** — every command takes `--json` for CI/CD pipelines
 
-- **One-shot:** pass all arguments on the command line and exit immediately
-- **Interactive REPL:** run without arguments to enter a persistent shell with tab completion, command history, and Metasploit-style sub-shells per command
+### `washmachine` (desktop)
 
-### `washmachine` (desktop app)
-
-A WinUI 3 application with page-based navigation:
+WinUI 3 app with page-based navigation:
 
 | Page | Purpose |
 |---|---|
-| **Main** | Shellcode source selection — file, hex string, or URL. Auto-detects .NET assemblies and shows conversion options |
-| **Compile** | Template selection, snippet configuration, and compilation. Supports both MSVC and the LLVM obfuscation backend |
+| **Main** | Shellcode source selection — file, hex, or URL. Auto-detects .NET and shows conversion options |
+| **Compile** | Template, snippet, and compilation configuration. Full LLVM backend toggle |
 | **Backdoor** | PE injection with all 5 methods and 3 execution modes |
-| **Settings** | Application preferences and session logging configuration |
+| **Settings** | Application preferences, session logging, active playbook selection |
 
-## Output locations
+## Where your artifacts go
 
-After a successful build:
+Every build writes to predictable locations:
 
 | Path | Contents |
 |---|---|
 | `temp/cpp/Compiled Binaries/` | Output `.exe` / `.dll`, named `YYYYMMDD_HHMMSS-<hash>.exe` |
-| `logging/session_<timestamp>/source.cpp` | Rendered C++ source before compilation |
-| `logging/session_<timestamp>/build_log.txt` | Full compiler output (stdout + stderr) |
+| `logging/session_<ts>/source.cpp` | Rendered C++ source before compilation |
+| `logging/session_<ts>/build_log.txt` | Full compiler output (stdout + stderr) |
+| `logging/session_<ts>/session.json` | Build metadata: template, snippets, shellcode hash, output path |
 
-See [Output & Artifacts](/guide/output) for details on all artifact paths and settings.
+→ [Output & artifacts](/guide/output)
+
+## Where to next
+
+| You want to… | Read this |
+|---|---|
+| Build your first loader end-to-end | [Setup](/guide/setup) → [First compilation](/guide/first-compile) |
+| Understand every pipeline stage | [Compilation flow](/internals/compile-pipeline) |
+| Customize templates and snippets | [Templates & snippets](/internals/template-engine) |
+| Add new techniques or build a custom playbook | [Playbook reference](/internals/yaml-catalog) |
+| Add LLVM IR-level obfuscation | [LLVM backend](/internals/llvm-backend) |
+| Analyze or backdoor an existing PE | [PE analysis](/internals/pe-analysis) · [PE injection](/internals/pe-injection) |
+| Encode payloads with Bin2Shell | [Bin2Shell overview](/bin2shell/overview) |
